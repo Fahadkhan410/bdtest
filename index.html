@@ -1,540 +1,270 @@
 
-<script>
-(function () {
-  const endpoint = "\/mgmnt\/ping.php";
-
-  // চ্যানেল বদলালেই এই ফাংশন কল করুন (player থেকে)
-  window.setPresenceChannel = function(channelName){
-    try {
-      window.CURRENT_CHANNEL = String(channelName || '').slice(0, 128);
-      send({ channel: window.CURRENT_CHANNEL });
-    } catch(e){}
-  };
-
-  function send(extra) {
-    const data = JSON.stringify(Object.assign({
-      path: location.pathname,
-      channel: window.CURRENT_CHANNEL || ''
-    }, extra || {}));
-
-    if (navigator.sendBeacon) {
-      try { navigator.sendBeacon(endpoint, new Blob([data], {type:'application/json'})); return; } catch(e){}
-    }
-    try {
-      fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, keepalive:true, body:data });
-    } catch (e) {}
-  }
-
-  // প্রথম পিং + হার্টবিট
-  send();
-  setInterval(send, 30000);
-  document.addEventListener('visibilitychange', ()=> send());
-  window.addEventListener('beforeunload', ()=> send({ closing:true }));
-
-  // (ঐচ্ছিক) DOM-এ data-channel এট্রিবিউট থাকলে অটো-ওয়্যার
-  document.addEventListener('click', (ev)=>{
-    const el = ev.target.closest('[data-channel]');
-    if (!el) return;
-    const name = el.getAttribute('data-channel') || '';
-    if (name) window.setPresenceChannel(name);
-  });
-
-  // (ঐচ্ছিক) <video data-channel="ATN News"> হলে play-এ ধরবে
-  document.addEventListener('play', (ev)=>{
-    const v = ev.target;
-    if (v && v.tagName === 'VIDEO') {
-      const n = v.getAttribute('data-channel') || '';
-      if (n) window.setPresenceChannel(n);
-    }
-  }, true);
-})();
-</script>
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>STV | Collection Of Streams !</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="refresh" content="73200">
-  <link rel="icon" href="/favicon.png">
-  <link rel="stylesheet" href="/css/bootstrap.min.css">
-  <link rel="stylesheet" href="/css/video-js.css">
-  <link rel="stylesheet" href="/css/style.css?v=2">
-
+  <title>BOSTAFLIX BDIX IPTV</title>
+  <link rel="shortcut icon" href="https://bostaflix.vercel.app/static/favicon.ico" type="image/x-icon" />
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* ==== Backgrounds ==== */
-    @media (min-width: 992px){
-      body{
-        background:#000 url(/img/forest.jpg?v=2) no-repeat;
-        background-size:cover!important; background-attachment:fixed!important;
-      }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #121212;
+      color: #fff;
     }
-    @media (max-width: 991.98px){
-      body{
-        background:#000 url(/forest.jpg?v=2) repeat;
-        background-size:contain!important; background-attachment:fixed!important;
-      }
-    }
-    a{ color:#fff; }
 
-    /* ==== Player wrapper (mobile friendly) ==== */
-    .player-wrap{
+    header {
+      background-color: #1e1e1e;
+      color: #fff;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 10;
+    }
+
+    .logo {
+      color: #ff3c3c;
+      text-decoration: none;
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .nav-links a {
+      color: #e0e0e0;
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: background 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      background-color: #ff3c3c;
+      color: #fff;
+    }
+
+    /* Banner */
+    #top-banner {
       position: relative;
       width: 100%;
-      /* CSS aspect-ratio (modern browsers) */
       aspect-ratio: 16 / 9;
-      background: #000;
-      border-radius: 8px;
+      max-height: 60vh;
       overflow: hidden;
-    }
-    /* fallback if aspect-ratio unsupported */
-    @supports not (aspect-ratio: 16/9){
-      .player-wrap::before{
-        content:""; display:block; padding-top:56.25%;
-      }
-      .player-wrap > *{ position:absolute; left:0; top:0; width:100%; height:100%; }
+      background: black;
     }
 
-    .player-iframe{
-      position:absolute; inset:0; width:100%; height:100%; border:0;
-      background:#000;
+    #top-banner a {
+      display: block;
+      width: 100%;
+      height: 100%;
     }
 
-    /* ==== PiP Button ==== */
-    .pip-btn{
-      position:absolute; right:12px; top:12px; z-index:5;
-      border:0; border-radius:10px; padding:8px 10px; cursor:pointer;
-      background:rgba(0,0,0,.55); color:#fff; font:600 12px/1.2 system-ui,Segoe UI,Roboto,Arial;
-      box-shadow:0 4px 10px rgba(0,0,0,.25);
-      -webkit-tap-highlight-color: transparent;
+    #banner-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background-color: black;
     }
-    .pip-btn:hover{ background:rgba(0,0,0,.75); }
-    .pip-btn[disabled]{ opacity:.6; cursor:not-allowed; }
 
-    /* ==== Channel list card ==== */
-    .channel-list{
-      -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-      background-color: #6e6e6e29; border-radius:10px;
+ #banner-text {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: min(2.5vw, 2em);
+  font-weight: bold;
+  color: white;
+}
+
+.video-card {
+  background-color: #1e1e1e;
+  aspect-ratio: 16 / 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: bold;
+  font-size: min(1.3vw, 1.1em);
+  border: 2px solid #ff3c3c;
+  text-decoration: none;
+  color: white;
+  transition: background 0.3s ease, transform 0.3s ease;
+  padding: 10px;
+}
+
+    /* Arrows */
+    .arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.4);
+      color: white;
+      border: none;
+      font-size: 2em;
+      cursor: pointer;
+      padding: 5px 15px;
+      z-index: 5;
     }
-    .thumbnail-slider img{ max-width:100%; height:auto; display:block; }
-    .thumbnail-slider li{ list-style:none; margin:6px; }
+
+    .arrow.left {
+      left: 10px;
+    }
+
+    .arrow.right {
+      right: 10px;
+    }
+
+    /* Dots */
+    .dots {
+      text-align: center;
+      padding: 10px 0;
+      font-family: monospace;
+    }
+
+    /* Grid */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      padding: 20px;
+    }
+    .video-card:hover {
+      background-color: #ff3c3c;
+      color: #fff;
+      transform: translateY(-5px);
+    }
+
+@media (max-width: 768px) {
+    .nav-links {
+      display: none;
+    }  
+.video-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .video-card {
+    font-size: 1em;
+  }
+
+  #banner-text {
+    font-size: 4vw;
+  }
+}
   </style>
 </head>
-<body id="body">
+<body>
 
-  <div class="container-fluid p-3">
-    <div class="row justify-content-center">
+  <!-- Header -->
+  <header>
+    <a href="https://bostaflix.vercel.app/index.html" class="logo">BOSTAFLIX</a>
+    <nav class="nav-links">
+      <a href="https://bostaflix.vercel.app/sports.html">Sports</a>
+      <a href="https://bostaflix.vercel.app/news.html">News</a>
+      <a href="https://bostaflix.vercel.app/entertainment.html">Entertainment</a>
+      <a href="https://bostaflix.vercel.app/movies.html">Movies</a>
+      <a href="https://bostaflix.vercel.app/kids.html">Kids</a>
+    </nav>
+  </header>
 
-      <div class="col-12 text-center">
-        <p class="fw-bold mb-2">
-          <a href="/tv.apk" title="Android App">
-            <img src="/img/download.png" alt="Download Android App" style="width: 200px; height: auto; border: none;">
-          </a>
-        </p>
-      </div>
+  <!-- Top Banner -->
+  <div id="top-banner">
+    <button class="arrow left" onclick="prevSlide()">&#8249;</button>
+    <a id="banner-link" href="https://bostaflix.vercel.app/play.html">
+      <img id="banner-image" src="https://bostaflix.vercel.app/livetv.png" alt="Banner">
+    </a>
+    <div id="banner-text">Watch BDIX TV LIVE</div>
+    <button class="arrow right" onclick="nextSlide()">&#8250;</button>
+  </div>
+  <div class="dots" id="banner-dots">01.00</div>
 
-      <!-- ===== Player area ===== -->
-      <div class="col-12 col-lg-8 mt-2">
-        <div class="player-wrap">
-          <!-- Same-origin iframe to your player page -->
-          <iframe
-            name="view"
-            src="wel.php"
-            class="player-iframe"
-            scrolling="no"
-            allow="autoplay; encrypted-media; picture-in-picture; fullscreen *"
-            allowfullscreen
-            referrerpolicy="origin"
-          ></iframe>
-
-          <!-- PiP button (top-right) -->
-          <button type="button" id="pipBtn" class="pip-btn" title="Picture-in-Picture">PiP</button>
-        </div>
-
-      
-      </div>
-
-      <!-- ===== Channel list ===== -->
-      <div class="col-12 col-lg-4 mt-4">
-        <div class="channel-list mx-auto p-3">
-          <ul class="nav nav-tabs nav-justified mb-3">
-                          <li class="nav-item">
-                <a class="nav-link active" data-type="Sports">Sports</a>
-              </li>
-                          <li class="nav-item">
-                <a class="nav-link " data-type="News">News</a>
-              </li>
-                          <li class="nav-item">
-                <a class="nav-link " data-type="Kids">Kids</a>
-              </li>
-                          <li class="nav-item">
-                <a class="nav-link " data-type="Hindi">Hindi</a>
-              </li>
-                          <li class="nav-item">
-                <a class="nav-link " data-type="Doc">Doc</a>
-              </li>
-                          <li class="nav-item">
-                <a class="nav-link " data-type="Bangla">Bangla</a>
-              </li>
-                      </ul>
-
-          <ul id="vidlink" class="thumbnail-slider flex-container p-0 m-0">
-            <div class="row">
-                              <li class="Sports" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Sony Ten 1"
-                     onclick="view.location.href='/play.php?stream=463'; window.setPresenceChannel && window.setPresenceChannel('Sony Ten 1'); return false;">
-                    <img src="/assets/images/sony-ten-1.png" alt="Sony Ten 1">
-                  </a>
-                </li>
-                              <li class="Sports" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Sony Ten 3"
-                     onclick="view.location.href='/play.php?stream=208'; window.setPresenceChannel && window.setPresenceChannel('Sony Ten 3'); return false;">
-                    <img src="/assets/images/Sony Ten 31730721897.png" alt="Sony Ten 3">
-                  </a>
-                </li>
-                              <li class="Sports" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Star Select1"
-                     onclick="view.location.href='/play.php?stream=320'; window.setPresenceChannel && window.setPresenceChannel('Star Select1'); return false;">
-                    <img src="/assets/images/Star Select11731408156.png" alt="Star Select1">
-                  </a>
-                </li>
-                              <li class="Sports" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Star Select2"
-                     onclick="view.location.href='/play.php?stream=322'; window.setPresenceChannel && window.setPresenceChannel('Star Select2'); return false;">
-                    <img src="/assets/images/Star Select21731408458.png" alt="Star Select2">
-                  </a>
-                </li>
-                              <li class="Sports" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Star Sports2"
-                     onclick="view.location.href='/play.php?stream=323'; window.setPresenceChannel && window.setPresenceChannel('Star Sports2'); return false;">
-                    <img src="/assets/images/Star Sports21731408535.png" alt="Star Sports2">
-                  </a>
-                </li>
-                              <li class="Sports" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="T SPorts"
-                     onclick="view.location.href='/play.php?stream=436'; window.setPresenceChannel && window.setPresenceChannel('T SPorts'); return false;">
-                    <img src="/assets/images/Tsports1735735587.png" alt="T SPorts">
-                  </a>
-                </li>
-                              <li class="News" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="ATN News"
-                     onclick="view.location.href='/play.php?stream=379'; window.setPresenceChannel && window.setPresenceChannel('ATN News'); return false;">
-                    <img src="/assets/images/ATN News1731520019.png" alt="ATN News">
-                  </a>
-                </li>
-                              <li class="News" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Jamuna TV"
-                     onclick="view.location.href='/play.php?stream=352'; window.setPresenceChannel && window.setPresenceChannel('Jamuna TV'); return false;">
-                    <img src="/assets/images/Jamuna TV1731468148.png" alt="Jamuna TV">
-                  </a>
-                </li>
-                              <li class="News" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Somoy"
-                     onclick="view.location.href='/play.php?stream=295'; window.setPresenceChannel && window.setPresenceChannel('Somoy'); return false;">
-                    <img src="/assets/images/Somoy1731406328.png" alt="Somoy">
-                  </a>
-                </li>
-                              <li class="Kids" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Cartoon Network"
-                     onclick="view.location.href='/play.php?stream=454'; window.setPresenceChannel && window.setPresenceChannel('Cartoon Network'); return false;">
-                    <img src="/assets/images/Cartoon Network1759066453.png" alt="Cartoon Network">
-                  </a>
-                </li>
-                              <li class="Kids" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Cartoon Network HD"
-                     onclick="view.location.href='/play.php?stream=405'; window.setPresenceChannel && window.setPresenceChannel('Cartoon Network HD'); return false;">
-                    <img src="/assets/images/Cartoon Network HD1732880800.png" alt="Cartoon Network HD">
-                  </a>
-                </li>
-                              <li class="Kids" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Discovery Kids"
-                     onclick="view.location.href='/play.php?stream=508'; window.setPresenceChannel && window.setPresenceChannel('Discovery Kids'); return false;">
-                    <img src="/assets/images/discovery-kids.png" alt="Discovery Kids">
-                  </a>
-                </li>
-                              <li class="Hindi" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Sony Enter Ten"
-                     onclick="view.location.href='/play.php?stream=358'; window.setPresenceChannel && window.setPresenceChannel('Sony Enter Ten'); return false;">
-                    <img src="/assets/images/Sony Enter Ten1731469071.png" alt="Sony Enter Ten">
-                  </a>
-                </li>
-                              <li class="Hindi" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Sony Max HD"
-                     onclick="view.location.href='/play.php?stream=466'; window.setPresenceChannel && window.setPresenceChannel('Sony Max HD'); return false;">
-                    <img src="/assets/images/sonymaxhd.png" alt="Sony Max HD">
-                  </a>
-                </li>
-                              <li class="Hindi" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Star Movies"
-                     onclick="view.location.href='/play.php?stream=360'; window.setPresenceChannel && window.setPresenceChannel('Star Movies'); return false;">
-                    <img src="/assets/images/Star Movies1731469513.png" alt="Star Movies">
-                  </a>
-                </li>
-                              <li class="Hindi" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Zee TV"
-                     onclick="view.location.href='/play.php?stream=511'; window.setPresenceChannel && window.setPresenceChannel('Zee TV'); return false;">
-                    <img src="/assets/images/zee-tv.png" alt="Zee TV">
-                  </a>
-                </li>
-                              <li class="Doc" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Animal Planet"
-                     onclick="view.location.href='/play.php?stream=518'; window.setPresenceChannel && window.setPresenceChannel('Animal Planet'); return false;">
-                    <img src="/assets/images/animal-planet.png" alt="Animal Planet">
-                  </a>
-                </li>
-                              <li class="Doc" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="National Geographic"
-                     onclick="view.location.href='/play.php?stream=457'; window.setPresenceChannel && window.setPresenceChannel('National Geographic'); return false;">
-                    <img src="/assets/images/National Geographic1759066929.png" alt="National Geographic">
-                  </a>
-                </li>
-                              <li class="Bangla" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Atn Bangla"
-                     onclick="view.location.href='/play.php?stream=378'; window.setPresenceChannel && window.setPresenceChannel('Atn Bangla'); return false;">
-                    <img src="/assets/images/Atn Bangla1731520005.png" alt="Atn Bangla">
-                  </a>
-                </li>
-                              <li class="Bangla" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="BTV"
-                     onclick="view.location.href='/play.php?stream=517'; window.setPresenceChannel && window.setPresenceChannel('BTV'); return false;">
-                    <img src="/assets/images/btv.png" alt="BTV">
-                  </a>
-                </li>
-                              <li class="Bangla" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Channel i"
-                     onclick="view.location.href='/play.php?stream=318'; window.setPresenceChannel && window.setPresenceChannel('Channel i'); return false;">
-                    <img src="/assets/images/Channel i1731407855.png" alt="Channel i">
-                  </a>
-                </li>
-                              <li class="Bangla" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="GTV"
-                     onclick="view.location.href='/play.php?stream=239'; window.setPresenceChannel && window.setPresenceChannel('GTV'); return false;">
-                    <img src="/assets/images/GTV 11731039246.png" alt="GTV">
-                  </a>
-                </li>
-                              <li class="Bangla" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Jalsha Movies"
-                     onclick="view.location.href='/play.php?stream=412'; window.setPresenceChannel && window.setPresenceChannel('Jalsha Movies'); return false;">
-                    <img src="/assets/images/Jalsha Movies1732941103.png" alt="Jalsha Movies">
-                  </a>
-                </li>
-                              <li class="Bangla" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Star Jalsha"
-                     onclick="view.location.href='/play.php?stream=390'; window.setPresenceChannel && window.setPresenceChannel('Star Jalsha'); return false;">
-                    <img src="/assets/images/Star Jalsha1732256743.png" alt="Star Jalsha">
-                  </a>
-                </li>
-                              <li class="Bangla" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Zee Bangla"
-                     onclick="view.location.href='/play.php?stream=462'; window.setPresenceChannel && window.setPresenceChannel('Zee Bangla'); return false;">
-                    <img src="/assets/images/Zee Bangla1759068299.png" alt="Zee Bangla">
-                  </a>
-                </li>
-                              <li class="Bangla" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Zee Bangla Cinema"
-                     onclick="view.location.href='/play.php?stream=365'; window.setPresenceChannel && window.setPresenceChannel('Zee Bangla Cinema'); return false;">
-                    <img src="/assets/images/Zee Bangla Cinema1731470057.png" alt="Zee Bangla Cinema">
-                  </a>
-                </li>
-                              <li class="Bangla" style="display:none;">
-                  <a href="#"
-                     class="channel flex-item d-inline-block"
-                     data-channel="Zee Bangla HD"
-                     onclick="view.location.href='/play.php?stream=433'; window.setPresenceChannel && window.setPresenceChannel('Zee Bangla HD'); return false;">
-                    <img src="/assets/images/Zee Bangla HD1736674908.png" alt="Zee Bangla HD">
-                  </a>
-                </li>
-                          </div>
-          </ul>
-        </div>
-      </div>
-
-    </div>
+  <!-- Button Grid -->
+  <div class="video-grid">
+    <a href="https://bostaflix.vercel.app/play.html" class="video-card">Free BDIX IPTV</a>
+    <a href="https://bostaflix.vercel.app/movies/" class="video-card">Watch Movies</a>
+    <a href="https://bostaflix.vercel.app/BostaGPT/" class="video-card">BostaGPT (AI Chatbot)</a>
+    <a href="https://bostaflix.vercel.app/news/" class="video-card">BOSTAFLIX News</a>
+    <a href="https://bostaflix.vercel.app/youtube-downloader.html" class="video-card">YouTube Video Downloader</a>
+    <a href="https://bostaflix.vercel.app/fbdl.html" class="video-card">Facebook Video Downloader</a>
+    <a href="https://bostaflix.vercel.app/games/" class="video-card">Play HTML5 Games</a>
+    <a href="https://bostaflix.vercel.app/al-quran/" class="video-card">Listen to The Holy Quran</a>
   </div>
 
-  <!-- JS -->
-  <script src="/js/jquery.min.js"></script>
-  <script src="/js/scripts.js?v=40"></script>
-
-  <!-- Tabs filter (lightweight; if scripts.js already handles, you can remove this) -->
+  <!-- Script -->
   <script>
-    document.addEventListener('click', function(ev){
-      const tab = ev.target.closest('.nav-link[data-type]');
-      if(!tab) return;
-      document.querySelectorAll('.nav-link[data-type]').forEach(el=>el.classList.remove('active'));
-      tab.classList.add('active');
-      const type = tab.getAttribute('data-type');
-      document.querySelectorAll('#vidlink li').forEach(li=>{
-        li.style.display = (li.classList.contains(type)) ? '' : 'none';
-      });
-    }, false);
-  </script>
-
-  <!-- ===== PiP control (iframe ভিতরের <video> টার্গেট করে; mobile-safe) ===== -->
-  <script>
-  (function(){
-    const iframe = document.querySelector('iframe.player-iframe');
-    const btn    = document.getElementById('pipBtn');
-
-    function getInnerDoc(){
-      try { return iframe?.contentDocument || iframe?.contentWindow?.document || null; }
-      catch(e){ return null; }
-    }
-    function getVideo(){
-      const doc = getInnerDoc();
-      if (!doc) return null;
-      // video.js/Clappr যাই হোক—DOM-এর প্রথম <video> ধরবো
-      return doc.querySelector('video');
-    }
-
-    async function togglePiP(){
-      const v = getVideo();
-      const doc = getInnerDoc();
-      if (!v || !doc){
-        btn.textContent = 'Player…';
-        setTimeout(()=> btn.textContent='PiP', 1000);
-        return;
+    const slides = [
+      {
+        src: "https://bostaflix.vercel.app/banner_01.webp",
+        text: "Watch BDIX TV LIVE",
+        link: "https://bostaflix.vercel.app/play.html"
+      },
+      {
+        src: "https://bostaflix.vercel.app/games.webp",
+        text: "Play HTML5 Games",
+        link: "https://bostaflix.vercel.app/games/"
+      },
+      {
+        src: "https://bostaflix.vercel.app/banner_02.webp",
+        text: "Enjoy Talking With BostaGPT (Ai Chatbot)",
+        link: "https://bostaflix.vercel.app/BostaGPT/"
+      },
+      {
+        src: "https://bostaflix.vercel.app/banner_05.webp",
+        text: "Enjoy Latest Movies",
+        link: "https://bostaflix.vercel.app/movies/"
+      },
+      {
+        src: "https://bostaflix.vercel.app/banner_03.webp",
+        text: "See The Latest News",
+        link: "https://bostaflix.vercel.app/news/"
+      },
+      {
+        src: "https://bostaflix.vercel.app/banner_04.webp",
+        text: "Listen to The Holy Quran",
+        link: "https://bostaflix.vercel.app/al-quran/"
       }
-      try{
-        // iOS/macOS Safari webkit mode
-        if ('webkitSupportsPresentationMode' in v && typeof v.webkitSetPresentationMode === 'function'){
-          const cur  = v.webkitPresentationMode || '';
-          const next = (cur === 'picture-in-picture') ? 'inline' : 'picture-in-picture';
-          v.webkitSetPresentationMode(next);
-          btn.textContent = (next === 'picture-in-picture') ? 'Exit PiP' : 'PiP';
-          return;
-        }
+    ];
 
-        if (doc.pictureInPictureElement){
-          await doc.exitPictureInPicture();
-          btn.textContent = 'PiP';
-          return;
-        }
-        if (doc.pictureInPictureEnabled && v.requestPictureInPicture){
-          // Mobile autoplay policy—ensure playing before PiP
-          if (v.paused) { try{ await v.play(); }catch(e){} }
-          await v.requestPictureInPicture();
-          btn.textContent = 'Exit PiP';
-        } else {
-          alert('Picture-in-Picture not supported in this browser');
-        }
-      }catch(err){
-        console.error(err);
-        alert('PiP failed: ' + (err?.message || err));
-      }
+    let current = 0;
+    const bannerImg = document.getElementById('banner-image');
+    const bannerText = document.getElementById('banner-text');
+    const bannerLink = document.getElementById('banner-link');
+    const bannerDots = document.getElementById('banner-dots');
+
+    function showSlide(index) {
+      current = (index + slides.length) % slides.length;
+      const slide = slides[current];
+      bannerImg.src = slide.src;
+      bannerText.innerText = slide.text;
+      bannerLink.href = slide.link;
+      bannerDots.innerText = slides.map((_, i) => i === current ? '.' : '0').join('');
     }
 
-    // Button click
-    btn.addEventListener('click', togglePiP);
-
-    // Wire PiP events when video becomes available (player loads async)
-    function wireEvents(){
-      const v = getVideo();
-      if (!v) return;
-      try{
-        v.addEventListener('enterpictureinpicture', ()=> btn.textContent='Exit PiP');
-        v.addEventListener('leavepictureinpicture', ()=> btn.textContent='PiP');
-        // iOS inline playback hints (if accessible)
-        v.setAttribute('playsinline','');
-        v.setAttribute('webkit-playsinline','');
-        v.setAttribute('muted',''); // mobile autoplay friendly; player may unmute later
-      }catch(e){}
+    function nextSlide() {
+      showSlide(current + 1);
     }
 
-    // Try a few times + observe DOM for dynamic player
-    let tries = 0;
-    const iv = setInterval(()=>{ wireEvents(); if(++tries>40) clearInterval(iv); }, 500);
-    try{
-      const mo = new MutationObserver(()=> wireEvents());
-      mo.observe(iframe, {childList:true, subtree:true});
-    }catch(e){}
-  })();
+    function prevSlide() {
+      showSlide(current - 1);
+    }
+
+    // Auto-scroll every 10s
+    setInterval(() => {
+      nextSlide();
+    }, 10000);
+
+    // Initialize
+    showSlide(0);
   </script>
-
-  <style>
-  .footer{ margin-top: 24px; }
-  .footer-box{
-    background:#111; color:#ccc; font-size:14px;
-    border-top:1px solid #222; padding:14px 10px; text-align:center;
-  }
-  .footer-box a{ color:#0d6efd; text-decoration:none; }
-  .footer-box a:hover{ text-decoration:underline; }
-  .footer-line{ margin:0 0 6px 0; }
-  .footer-sep{ color:#666; margin:0 6px; }
-  .flag-wrap{ margin-top:8px; }
-</style>
-
-<footer class="footer">
-  <div class="footer-box">
-    <p class="footer-line">
-      <strong>IP Address:</strong> 103.100.130.200      <span class="footer-sep">|</span>
-   
-      <strong>Visit Time:</strong> 2025-11-04 06:44:56    </p>
-    <p class="footer-line">
-      <strong>Online Now:</strong>
-      1 user    </p>
-    <p class="footer-line" style="margin-top:10px;">
-      <strong>Designed By:</strong>
-      <a href="https://fb.com/Arifkhan410" target="_blank" rel="noopener">ARIF</a>    </p>
-    <div class="flag-wrap">
-      <a href="https://info.flagcounter.com/BE5w" target="_blank" rel="noopener">
-        <img src="https://s11.flagcounter.com/count2/BE5w/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_10/viewers_0/labels_0/pageviews_0/flags_0/percent_0/"
-             alt="Flag Counter" border="0">
-      </a>
-    </div>
-  </div>
-</footer>
 </body>
 </html>
