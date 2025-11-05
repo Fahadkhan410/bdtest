@@ -2,170 +2,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>BOSTAFLIX BDIX IPTV</title>
-  <link rel="shortcut icon" href="https://bostaflix.vercel.app/static/favicon.ico" type="image/x-icon" />
   <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
+  <title>Bostafull Live BDIX TV Server 24/7 BD IPTV</title>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1321980978077433" crossorigin="anonymous"></script>
+
+<style>
     body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #121212;
-      color: #fff;
+        background-color: #121212;
+        margin: 0;
+        padding: 0;
+        color: #f0f0f0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        scroll-behavior: smooth;
     }
 
+    /* Header styling */
     header {
-      background-color: #1e1e1e;
-      color: #fff;
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: relative;
-      z-index: 10;
+        background-color: #1e1e1e;
+        color: #fff;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.4);
     }
 
     .logo {
-      color: #ff3c3c;
-      text-decoration: none;
-      font-size: 1.5em;
-      font-weight: bold;
+        color: #ff3c3c;
+        text-decoration: none;
+        font-size: 1.5em;
+        font-weight: bold;
+        letter-spacing: 0.5px;
     }
 
     .nav-links {
-      display: flex;
-      gap: 20px;
+        display: flex;
+        gap: 20px;
     }
 
     .nav-links a {
-      color: #e0e0e0;
-      text-decoration: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      transition: background 0.3s ease;
+        color: #e0e0e0;
+        text-decoration: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        transition: background 0.3s ease;
     }
 
     .nav-links a:hover {
-      background-color: #ff3c3c;
-      color: #fff;
+        background-color: #ff3c3c;
+        color: #fff;
     }
 
-    /* Banner */
-    #top-banner {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      max-height: 60vh;
-      overflow: hidden;
-      background: black;
+    /* Iframe container */
+    .iframe-container {
+        padding-bottom: auto;
+        aspect-ratio: 16 / 9;
+        position: relative;
+        margin: 20px auto;
+        max-width: 100%;
+        color: black;
     }
 
-    #top-banner a {
-      display: block;
-      width: 100%;
-      height: 100%;
+    iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        border-radius: 0; /* No round edges */
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        color: black;
     }
 
-    #banner-image {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background-color: black;
+    /* Logo container */
+    .logos-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+        padding: 15px;
+        margin: 20px auto;
     }
 
- #banner-text {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: rgba(0, 0, 0, 0.5);
-  padding: 10px 20px;
-  border-radius: 5px;
-  font-size: min(2.5vw, 2em);
-  font-weight: bold;
-  color: white;
+.logos-container img {
+    width: 100px;
+    height: 75px;              /* 4:3 container */
+    object-fit: contain;
+    aspect-ratio: 4 / 3;
+    padding: 6px;
+    border: 1px solid #ff3c3c; /* red border */
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s;
+
+    /* Gray background as base */
+    background-color: #4d4d4d;
+
+    /* White 16:9 centered "screen" */
+    background-image: linear-gradient(white, white);
+    background-size: 100% 70%; /* 16:9 = 9/16 = 56.25% of height */
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
-.video-card {
-  background-color: #1e1e1e;
-  aspect-ratio: 16 / 6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-weight: bold;
-  font-size: min(1.3vw, 1.1em);
-  border: 2px solid #ff3c3c;
-  text-decoration: none;
-  color: white;
-  transition: background 0.3s ease, transform 0.3s ease;
-  padding: 10px;
-}
-
-    /* Arrows */
-    .arrow {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(0, 0, 0, 0.4);
-      color: white;
-      border: none;
-      font-size: 2em;
-      cursor: pointer;
-      padding: 5px 15px;
-      z-index: 5;
+    .logos-container img:hover {
+        transform: scale(1.08);
+        box-shadow: 0 0 12px rgba(255, 60, 60, 0.5);
     }
 
-    .arrow.left {
-      left: 10px;
+    /* Category filter */
+    .category-filter {
+        margin: 25px auto;
+        text-align: center;
     }
 
-    .arrow.right {
-      right: 10px;
+    .category-filter select {
+        padding: 10px 14px;
+        font-size: 16px;
+        border-radius: 6px;
+        background-color: #1e1e1e;
+        color: #fff;
+        border: 1px solid #555;
+        outline: none;
     }
 
-    /* Dots */
-    .dots {
-      text-align: center;
-      padding: 10px 0;
-      font-family: monospace;
+    @media (min-width: 720px) {
+        .iframe-container {
+            max-height: 70vh;
+            max-width: 80%;
+            
+        }
+            .logos-container {
+                max-width: 80vw;
+        }
     }
 
-    /* Grid */
-    .video-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 15px;
-      padding: 20px;
+    @media (max-width: 720px) {
+        .iframe-container {
+            width: 100%;
+        }
+
+        .nav-links {
+            display: none;
+        }
     }
-    .video-card:hover {
-      background-color: #ff3c3c;
-      color: #fff;
-      transform: translateY(-5px);
-    }
-
-@media (max-width: 768px) {
-    .nav-links {
-      display: none;
-    }  
-.video-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .video-card {
-    font-size: 1em;
-  }
-
-  #banner-text {
-    font-size: 4vw;
-  }
-}
-  </style>
+    @media (max-width: 400px) {
+        .logos-container img {
+        width: 80px;
+        height: 60px;
+        }
+</style>
 </head>
-<body>
 
-  <!-- Header -->
+<body>
   <header>
     <a href="https://bostaflix.vercel.app/index.html" class="logo">BOSTAFLIX</a>
     <nav class="nav-links">
@@ -177,94 +167,61 @@
     </nav>
   </header>
 
-  <!-- Top Banner -->
-  <div id="top-banner">
-    <button class="arrow left" onclick="prevSlide()">&#8249;</button>
-    <a id="banner-link" href="https://bostaflix.vercel.app/play.html">
-      <img id="banner-image" src="https://bostaflix.vercel.app/livetv.png" alt="Banner">
-    </a>
-    <div id="banner-text">Watch BDIX TV LIVE</div>
-    <button class="arrow right" onclick="nextSlide()">&#8250;</button>
-  </div>
-  <div class="dots" id="banner-dots">01.00</div>
-
-  <!-- Button Grid -->
-  <div class="video-grid">
-    <a href="https://bostaflix.vercel.app/play.html" class="video-card">Free BDIX IPTV</a>
-    <a href="https://bostaflix.vercel.app/movies/" class="video-card">Watch Movies</a>
-    <a href="https://bostaflix.vercel.app/BostaGPT/" class="video-card">BostaGPT (AI Chatbot)</a>
-    <a href="https://bostaflix.vercel.app/news/" class="video-card">BOSTAFLIX News</a>
-    <a href="https://bostaflix.vercel.app/youtube-downloader.html" class="video-card">YouTube Video Downloader</a>
-    <a href="https://bostaflix.vercel.app/fbdl.html" class="video-card">Facebook Video Downloader</a>
-    <a href="https://bostaflix.vercel.app/games/" class="video-card">Play HTML5 Games</a>
-    <a href="https://bostaflix.vercel.app/al-quran/" class="video-card">Listen to The Holy Quran</a>
+  <div class="iframe-container">
+    <iframe id="videoFrame" allowfullscreen></iframe>
   </div>
 
-  <!-- Script -->
+  <div class="logos-container" id="logosContainer">
+    <!-- Dynamic JSON content goes here -->
+  </div>
+
   <script>
-    const slides = [
-      {
-        src: "https://bostaflix.vercel.app/banner_01.webp",
-        text: "Watch BDIX TV LIVE",
-        link: "https://bostaflix.vercel.app/play.html"
-      },
-      {
-        src: "https://bostaflix.vercel.app/games.webp",
-        text: "Play HTML5 Games",
-        link: "https://bostaflix.vercel.app/games/"
-      },
-      {
-        src: "https://bostaflix.vercel.app/banner_02.webp",
-        text: "Enjoy Talking With BostaGPT (Ai Chatbot)",
-        link: "https://bostaflix.vercel.app/BostaGPT/"
-      },
-      {
-        src: "https://bostaflix.vercel.app/banner_05.webp",
-        text: "Enjoy Latest Movies",
-        link: "https://bostaflix.vercel.app/movies/"
-      },
-      {
-        src: "https://bostaflix.vercel.app/banner_03.webp",
-        text: "See The Latest News",
-        link: "https://bostaflix.vercel.app/news/"
-      },
-      {
-        src: "https://bostaflix.vercel.app/banner_04.webp",
-        text: "Listen to The Holy Quran",
-        link: "https://bostaflix.vercel.app/al-quran/"
+    const jsonURL = "https://bostaflix.vercel.app/ayna-proxy.json"; 
+    // 👆 Replace this with your real JSON endpoint
+
+    async function loadChannels() {
+      try {
+        const response = await fetch(jsonURL);
+        const data = await response.json();
+        const channels = data.data.list;
+        const container = document.getElementById("logosContainer");
+        container.innerHTML = "";
+
+        channels.forEach(ch => {
+          const img = document.createElement("img");
+          img.src = ch.logo;
+          img.alt = ch.title;
+          img.title = ch.title;
+          img.setAttribute("data-category", ch.category);
+          img.onclick = () => loadIframe(`https://bostaflix.vercel.app/ayna.html?id=${encodeURIComponent(ch.title)}`);
+          container.appendChild(img);
+        });
+      } catch (err) {
+        console.error("Error loading JSON:", err);
       }
-    ];
-
-    let current = 0;
-    const bannerImg = document.getElementById('banner-image');
-    const bannerText = document.getElementById('banner-text');
-    const bannerLink = document.getElementById('banner-link');
-    const bannerDots = document.getElementById('banner-dots');
-
-    function showSlide(index) {
-      current = (index + slides.length) % slides.length;
-      const slide = slides[current];
-      bannerImg.src = slide.src;
-      bannerText.innerText = slide.text;
-      bannerLink.href = slide.link;
-      bannerDots.innerText = slides.map((_, i) => i === current ? '.' : '0').join('');
     }
 
-    function nextSlide() {
-      showSlide(current + 1);
+    function loadIframe(url) {
+      document.getElementById("videoFrame").src = url;
+      document.querySelector("header").scrollIntoView({behavior:"smooth"});
     }
 
-    function prevSlide() {
-      showSlide(current - 1);
+    // load channel by ?id=Title
+    function getQueryParam(param) {
+      return new URLSearchParams(window.location.search).get(param);
     }
 
-    // Auto-scroll every 10s
-    setInterval(() => {
-      nextSlide();
-    }, 10000);
-
-    // Initialize
-    showSlide(0);
+    window.onload = async function() {
+      await loadChannels();
+      const qid = getQueryParam("id");
+      if (qid) loadIframe(`ayna.html?id=${encodeURIComponent(qid)}`);
+    };
   </script>
+
+  <footer style="color:white; background-color:rgba(0,0,0,0.5); padding:10px; text-align:center;">
+    &copy; Bostafull Live by Syed Ashraful Islam Mahbeer.  
+    Embedded content collected from the internet.  
+    Wait up to 1 min to load; if not, change server.
+  </footer>
 </body>
 </html>
