@@ -1,104 +1,139 @@
 
+<!-- Code All Bug Fixd BongoFlixBD @eamintalukdar -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Jadoo | Buddy✘TV</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="referrer" content="no-referrer">
-  <script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@1.0.1/dist/hlsjs-playback.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/level-selector@0.2.0/dist/level-selector.min.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="refresh" content="7200">
+<meta name="description" content="Watch Live TV Channels On 𝐁ongo 𝐅lix. Join Now For The Best Streaming Experience!">
+<meta name="keywords" content="Eamin Talukdar, Bongo Flix, Bdix Live TV">
+<meta name="robots" content="index, follow">
+
+<title>𝐁ongo 𝐅lix</title>
+<link rel="icon" href="https://i.postimg.cc/8kWYsw9n/20241228_183443.png" type="image/png">
+
+<!-- CSS -->
+<link rel="stylesheet" href="https://eamintalukdar.pages.dev/bdixtv/css/bootstrap.min.css">
+<link href="https://eamintalukdar.pages.dev/bdixtv/css/video-js.css" rel="stylesheet">
+<link href="https://eamintalukdar.pages.dev/bdixtv/css/style.css" rel="stylesheet">
+
 <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    background: #000;
-    overflow: hidden;
-  }
-
-  #player {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-
-  /* When screen width is below 400px, scale down entire page */
-  @media (max-width: 400px) {
-    body {
-      transform: scale(0.8);
-      transform-origin: top left;
-      width: 125%;   /* compensate for scaling shrink */
-      height: 125%;
-    }
-  }
+    .janiD { display: block; margin: 10px 0; text-align: center; }
+    .embed-responsive { position: relative; width: 100%; height: 0; padding-bottom: 56.25%; }
+    .embed-responsive iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    .marquee-section { margin-top: 15px; text-align: center; }
+    @media (max-width: 768px) { .embed-responsive { padding-bottom: 56.25%; } .marquee-section, .janiD { font-size: 14px; } }
 </style>
 </head>
-<body>
-  <div id="player"></div>
+<body id="body">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="tvtop col-12 col-lg-8 mt-4 p-1">
 
-  <script>
-    // Disable right-click
-    document.addEventListener("contextmenu", e => e.preventDefault());
+             <!-- Play Store Button (above the player) -->
+                <section class="tvtop justify-content-center col-lg-8 mt-4">
+                    <button type="button" class="janiD btn btn-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-google-play" viewBox="0 0 16 16">
+                            <path d="M14.222 9.374c1.037-.61 1.037-2.137 0-2.748L11.528 5.04 8.32 8l3.207 2.96zm-3.595 2.116L7.583 8.68 1.03 14.73c.201 1.029 1.36 1.61 2.303 1.055zM1 13.396V2.603L6.846 8zM1.03 1.27l6.553 6.05 3.044-2.81L3.333.215C2.39-.341 1.231.24 1.03 1.27"></path>
+                        </svg>
+                    <a href="/smarttv.html" target="_blank">   SMART TV </a>
+                </button>
+            </section>
 
-    // Get query parameter (?id=Title)
-    function getQueryParam(name) {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(name);
-    }
+         
+            <div class="embed-responsive embed-responsive-16by9">
+                <iframe id="player" class="metaframe rptss" 
+                    src="https://eamintalukdar.pages.dev/bdixtv/site/wel" 
+                    frameborder="0" scrolling="no" allow="autoplay; encrypted-media" allowfullscreen>
+                </iframe>
+            </div>
 
-    // Initialize player
-    function createPlayer(sourceUrl) {
-      const player = new Clappr.Player({
-        source: sourceUrl,
-        parentId: "#player",
-        width: "100%",
-        height: "100%",
-        autoPlay: true,
-        mimeType: "application/x-mpegURL",
-        plugins: [HlsjsPlayback, LevelSelector],
-        mediacontrol: { seekbar: "#ff0000", buttons: "#eee" }
-      });
+          
+                 <section class="main content marquee-section" style="display: flex;" id="companyAnnoucementDisplaySection">
+					<span class="announcement-title col-sm-2" id="displayedCompanyAnnoucementTitle">বিশেষ বিজ্ঞপ্তিঃ </span>
+					
+					<marquee class="jani col-sm-10" direction="тАЭrightтАЭ" onmouseover="stop()" onmouseout="start()" id="displayedCompanyAnnoucementDescription"> আসসালামু আলাইকুম ! আমার নেট ইন্টারনেটে আপনাকে স্বাগতম ।। সম্মানিত গ্রাহক, নিরবিচ্ছিন্ন ইন্টারনেট সেবা উপভোগ করতে অনুগ্রহ করে মেয়াদ শেষ হবার আগেই ইন্টারনেট বিল রিচার্জ করুন ।। যেকোনো প্রয়োজনেঃ মোঃ ইয়ামিন তালুকদার রনি ∆ +8809638373837 কল দিন ✅</marquee>    
+    </section>   
 
-      player.on(Clappr.Events.PLAYER_ERROR, () => {
-        console.warn("Playback error — retrying...");
-        setTimeout(() => {
-          player.load(player.options.source);
-          player.play();
-        }, 500);
-      });
-    }
+            </div> 
+<!-- Code All Bug Fixd BongoFlixBD @eamintalukdar -->
+        <!-- Channel List Section -->
+        <div class="col-12 col-lg-4 mt-4">
+            <div class="channel-list mx-auto" style="backdrop-filter: blur(8px); background-color: #6e6e6e29; border-radius: 10px;">
+                <ul class="nav nav-tabs nav-justified mb-3">
+                    <li class="nav-item"><a class="nav-link active" data-type="Live">Live</a></li>
+                    <li class="nav-item"><a class="nav-link" data-type="Bangla">Bangla</a></li>
+                    <li class="nav-item"><a class="nav-link" data-type="Indian">Indian</a></li>
+					<li class="nav-item"><a class="nav-link" data-type="Hindi">Hindi</a></li>
+                    <li class="nav-item"><a class="nav-link" data-type="Music">Music</a></li>
+                    <li class="nav-item"><a class="nav-link" data-type="Kids">Kids</a></li>
+                    <li class="nav-item"><a class="nav-link" data-type="Others">Others</a></li>
+                </ul>
+                <ul id="vidlink" class="thumbnail-slider flex-container">
+                    <div class="row" id="channel-list">
+             <!-- Code All Bug Fixd BongoFlixBD @eamintalukdar -->
+                    </div>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
 
-    const requestedTitle = getQueryParam("id");
+<!-- JS -->
+<script src="https://eamintalukdar.pages.dev/bdixtv/js/jquery.min.js"></script>
+<script src="https://eamintalukdar.pages.dev/bdixtv/js/scripts.js"></script>
 
-    if (requestedTitle) {
-      fetch("ayna-proxy.json")
-        .then(res => res.json())
-        .then(json => {
-          // Adjust depending on your JSON structure
-          const list = json.data?.list || [];
-          const match = list.find(
-            item => item.title.toLowerCase() === requestedTitle.toLowerCase()
-          );
+<script>
+$(document).ready(function() {
+   
+    $.getJSON('https://eamintalukdar.pages.dev/channels.json', function(data) {
+        loadChannels(data);
+    });
 
-          if (match && match.id) {
-            const streamUrl = `api/ayna.m3u8?id=${match.id}`;
-            createPlayer(streamUrl);
-          } else {
-            alert(`Channel "${requestedTitle}" not found in list.`);
-          }
-        })
-        .catch(err => {
-          console.error("Failed to load channel list:", err);
-          alert("Error loading channel list.");
+    function loadChannels(data) {
+        const channelList = $('#channel-list');
+        channelList.empty();
+
+      
+        for (const type in data) {
+            data[type].forEach(channel => {
+                const channelItem = `
+                    <li class="${type}">
+                        <a href="#" onclick="changeChannel('${channel.url}')" class='channel flex-item'>
+                            <img src="${channel.logo}" alt="${channel.name}">
+                        </a>
+                    </li>
+                `;
+                channelList.append(channelItem);
+            });
+        }
+
+    
+        $('.nav-link').on('click', function() {
+            const type = $(this).data('type');
+            $('.nav-link').removeClass('active');
+            $(this).addClass('active');
+
+            channelList.empty();
+            data[type].forEach(channel => {
+                const channelItem = `
+                    <li class="${type}">
+                        <a href="#" onclick="changeChannel('${channel.url}')" class='channel flex-item'>
+                            <img src="${channel.logo}" alt="${channel.name}">
+                        </a>
+                    </li>
+                `;
+                channelList.append(channelItem);
+            });
         });
-    } else {
-      alert("Missing 'id' parameter in URL.");
     }
-  </script>
+});
+
+
+function changeChannel(url) {
+    $('#player').attr('src', url);
+}
+</script>
 </body>
 </html>
