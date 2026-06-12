@@ -1,7 +1,9 @@
 #EXTM3U
-#EXTINF:-1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", PTV
-https://tvsen5.aynaott.com/PtvSports/index.m3u8
-#EXTINF:-1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", TS
-http://103.59.176.72:8083/live1/tracks-v1a1/mono.m3u8?token=123
-#EXTINF:-1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", SM
+#EXTINF: -1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="YOUR🎬SERVER (FOR ALL)", SM
 https://live.thebosstv.com:30443/dwlive/Somoy-TV/playlist.m3u8
+#EXTINF: -1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="YOUR🎬SERVER (FOR ALL)", Karuppu (2026)
+https://pixeldrain.dev/api/file/4rdeS9jq?download
+#EXTINF: -1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="YOUR🎬SERVER (FOR ALL)", August 14 Ep-01 (2020)
+https://www.googleapis.com/drive/v3/files/1Ful6Z50dlGmXeF6Oo49SO02U7gSAROTN?alt=media&key=AIzaSyC6OCi9AiGITE_G7U8p2cNJLxu6dVSiFYQ
+#EXTINF: -1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="YOUR🎬SERVER (FOR ALL)", Mohanagar.2021
+http://vodlb1.zaintv.net/meDia/SeRies/Mohanagar.Hoichoi/Mohanagar.2021.Bengali.Hoichoi.Web.Series.WEBDL.H264.AAC.1080pVegamovies.to.mkv
