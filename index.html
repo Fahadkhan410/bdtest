@@ -57,6 +57,9 @@
         let currentHls = null;
         const DEFAULT_LOGO = 'https://images.unsplash.com/photo-1595624871930-6e8537998592?w=100&auto=format&fit=crop&q=60';
 
+        // Global state to store all parsed channels
+        let allChannels = [];
+
         // ADD ALL YOUR M3U PLAYLIST LINKS TO THIS ARRAY:
         const PLAYLIST_URLS = [
             'https://raw.githubusercontent.com/Fahadkhan410/bdtest/refs/heads/main/cha.m3u',
@@ -128,8 +131,6 @@
         // Fetches a single playlist and extracts channels
         async function fetchPlaylist(url) {
             try {
-                // If fetching a Codeberg link or a generic server, you might run into CORS issues.
-                // If a link fails to load, wrap it in a proxy: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url)
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 
@@ -165,7 +166,7 @@
                 return channels;
             } catch (error) {
                 console.error(`Failed to load playlist from ${url}:`, error);
-                return []; // Return empty list on failure so other lists still load
+                return [];
             }
         }
 
@@ -182,15 +183,21 @@
                 combinedChannels = combinedChannels.concat(channelsArray);
             });
 
-            renderChannels(combinedChannels);
+            // Save to global variable so search filter can use it anytime
+            allChannels = combinedChannels;
+
+            // Render channels and pass true to trigger autoplay on the initial load
+            renderChannels(allChannels, true);
         }
 
-        function renderChannels(channels) {
+        // Modified to accept an optional 'isInitialLoad' flag to prevent resetting 
+        // or restarting active videos when users type in the search bar.
+        function renderChannels(channels, isInitialLoad = false) {
             const channelList = document.getElementById('channel-list');
             channelList.innerHTML = '';
             
             if (channels.length === 0) {
-                channelList.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No channels loaded</div>';
+                channelList.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No channels found</div>';
                 return;
             }
 
@@ -204,19 +211,30 @@
                 item.onclick = () => playChannel(channel.url);
                 channelList.appendChild(item);
 
-                if (index === 0) {
+                // Only auto-play the very first item during the initial app layout load
+                if (index === 0 && isInitialLoad) {
                     playChannel(channel.url);
                 }
             });
         }
 
+        // Optimized filtering function leveraging array filtering instead of brute DOM alteration
         function filterChannels() {
             const searchInput = document.getElementById('search-input').value.toLowerCase().trim();
-            const items = document.querySelectorAll('.channel-item');
-            items.forEach(item => {
-                const name = item.querySelector('span').textContent.toLowerCase();
-                item.style.display = name.includes(searchInput) ? 'flex' : 'none';
-            });
+            
+            // If search is empty, show everything (don't autoplay again)
+            if (searchInput === '') {
+                renderChannels(allChannels, false);
+                return;
+            }
+
+            // Filter data array cleanly
+            const filtered = allChannels.filter(channel => 
+                channel.name.toLowerCase().includes(searchInput)
+            );
+
+            // Re-render matching items without restarting current playback streams
+            renderChannels(filtered, false);
         }
     </script>
 </body>
