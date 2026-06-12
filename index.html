@@ -287,7 +287,7 @@
 
         async function loadChannels() {
             try {
-                const response = await fetch('https://codeberg.org/arham410/Freelivebd/raw/branch/main/freebd.m3u');
+                const response = await fetch('https://raw.githubusercontent.com/sm-monirulislam/RoarZone-Auto-Update-playlist/refs/heads/main/RoarZone.m3u');
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 
                 const playlist = await response.text();
