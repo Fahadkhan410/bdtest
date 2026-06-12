@@ -1,137 +1,340 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta http-equiv="refresh" content="7200">
-<meta name="description" content="Watch Live SPORTS">
-<meta name="keywords" content="USA Live TV">
-<meta name="robots" content="index, follow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orit Live</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="https://i.ibb.co/WtzxpGF/1000033024.png">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<title>USA 𝐅lix</title>
-<link rel="icon" href="https://i.postimg.cc/SRgsPFyg/image.png" type="image/png">
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000000;
+            color: #fff;
+            min-height: 100vh;
+            overflow: hidden;
+        }
 
-<!-- CSS -->
-<link rel="stylesheet" href="bootstrap.min.css">
-<link href="video-js.css" rel="stylesheet">
-<link href="style.css" rel="stylesheet">
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-<style>
-    .janiD { display: block; margin: 10px 0; text-align: center; }
-    .embed-responsive { position: relative; width: 100%; height: 0; padding-bottom: 56.25%; }
-    .embed-responsive iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-    .marquee-section { margin-top: 15px; text-align: center; }
-    @media (max-width: 768px) { .embed-responsive { padding-bottom: 56.25%; } .marquee-section, .janiD { font-size: 14px; } }
-</style>
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #player-container {
+            width: 100%;
+            background: #000;
+            position: relative;
+        }
+
+        #live-tv-player {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            object-fit: contain;
+        }
+
+        .channel-section {
+            background-image: url('https://raw.githubusercontent.com/cracker2161/syncing_file/refs/heads/main/logo/bitt%20ka%20naam.jpeg');
+            background-size: cover;
+            background-position: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .search-bar {
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            outline: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 16px;
+        }
+
+        .channel-list {
+            flex: 1;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .channel-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .channel-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .channel-item img {
+            width: 40px;
+            height: 40px;
+            margin-right: 15px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .channel-item span {
+            color: #fff;
+            font-size: 15px;
+        }
+
+        .footer {
+            padding: 10px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .footer a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .channel-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .channel-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .channel-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        @media (min-width: 768px) {
+            .content-wrapper {
+                flex-direction: row;
+            }
+
+            #player-container {
+                flex: 0 0 70%;
+                height: 100vh;
+            }
+
+            .channel-section {
+                width: 30%;
+                min-width: 30%;
+            }
+        }
+
+        @media (max-width: 767px) {
+            body {
+                overflow: auto;
+            }
+
+            .container {
+                height: auto;
+            }
+
+            #player-container {
+                height: 35vh;
+            }
+
+            .channel-section {
+                height: 65vh;
+            }
+
+            .channel-list {
+                max-height: calc(65vh - 110px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .channel-item {
+                padding: 10px;
+            }
+
+            .channel-item img {
+                width: 35px;
+                height: 35px;
+                margin-right: 10px;
+            }
+
+            .channel-item span {
+                font-size: 14px;
+            }
+        }
+    </style>
 </head>
-<body id="body">
-    <div class="container-fluid">
-        <div class="row justify-content-center">
-            <div class="tvtop col-12 col-lg-8 mt-4 p-1">
-
-             <!-- Play Store Button (above the player) -->
-                <section class="tvtop justify-content-center col-lg-8 mt-4">
-                    <button type="button" class="janiD btn btn-success">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-google-play" viewBox="0 0 16 16">
-                            <path d="M14.222 9.374c1.037-.61 1.037-2.137 0-2.748L11.528 5.04 8.32 8l3.207 2.96zm-3.595 2.116L7.583 8.68 1.03 14.73c.201 1.029 1.36 1.61 2.303 1.055zM1 13.396V2.603L6.846 8zM1.03 1.27l6.553 6.05 3.044-2.81L3.333.215C2.39-.341 1.231.24 1.03 1.27"></path>
-                        </svg>
-                    <a href="///smarttv.html" target="_blank"> SMART TV </a>
-                </button>
-            </section>
-
-         
-            <div class="embed-responsive embed-responsive-16by9">
-                <iframe id="player" class="metaframe rptss" 
-                    src="------" 
-                    frameborder="0" scrolling="no" allow="autoplay; encrypted-media" allowfullscreen>
-                </iframe>
+<body>
+    <div class="container">
+        <div class="content-wrapper">
+            <div id="player-container">
+                <video id="live-tv-player" controls preload="auto">
+                    Your browser does not support the video tag.
+                </video>
             </div>
 
-          
-                 <section class="main content marquee-section" style="display: flex;" id="companyAnnoucementDisplaySection">
-					<span class="announcement-title col-sm-2" id="displayedCompanyAnnoucementTitle">বিশেষ বিজ্ঞপ্তিঃ </span>
-					
-					<marquee class="jani col-sm-10" direction="тАЭrightтАЭ" onmouseover="stop()" onmouseout="start()" id="displayedCompanyAnnoucementDescription"> USA FLIX✅</marquee>    
-    </section>   
-
-            </div> 
-<!-- Code All Bug Fixd BongoFlixBD @eamintalukdar -->
-        <!-- Channel List Section -->
-        <div class="col-12 col-lg-4 mt-4">
-            <div class="channel-list mx-auto" style="backdrop-filter: blur(8px); background-color: #6e6e6e29; border-radius: 10px;">
-                <ul class="nav nav-tabs nav-justified mb-3">
-                    <li class="nav-item"><a class="nav-link active" data-type="Live">Live</a></li>
-                    <li class="nav-item"><a class="nav-link" data-type="Bangla">Bangla</a></li>
-                    <li class="nav-item"><a class="nav-link" data-type="Indian">Indian</a></li>
-					<li class="nav-item"><a class="nav-link" data-type="Hindi">Hindi</a></li>
-                    <li class="nav-item"><a class="nav-link" data-type="Music">Music</a></li>
-                    <li class="nav-item"><a class="nav-link" data-type="Kids">Kids</a></li>
-                    <li class="nav-item"><a class="nav-link" data-type="Others">Others</a></li>
-                </ul>
-                <ul id="vidlink" class="thumbnail-slider flex-container">
-                    <div class="row" id="channel-list">
-             <!-- Code All Bug Fixd USA FLIX -->
-                    </div>
-                </ul>
+            <div class="channel-section">
+                <div class="search-bar">
+                    <input type="text" id="search-input" placeholder="Search channels..." onkeyup="filterChannels()">
+                </div>
+                <div class="channel-list" id="channel-list"></div>
+                <div class="footer">
+                    <a href="updates.html" target="_blank">Visit for more updates</a>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- JS -->
-<script src="jquery.min.js"></script>
-<script src="scripts.js"></script>
+    <script>
+        let player = document.getElementById('live-tv-player');
+        let currentHls = null;
 
-<script>
-$(document).ready(function() {
-   
-    $.getJSON('channels.json', function(data) {
-        loadChannels(data);
-    });
+        window.onload = () => {
+            loadChannels();
+            adjustPlayerHeight();
+        };
 
-    function loadChannels(data) {
-        const channelList = $('#channel-list');
-        channelList.empty();
+        window.onresize = adjustPlayerHeight;
 
-      
-        for (const type in data) {
-            data[type].forEach(channel => {
-                const channelItem = `
-                    <li class="${type}">
-                        <a href="#" onclick="changeChannel('${channel.url}')" class='channel flex-item'>
-                            <img src="${channel.logo}" alt="${channel.name}">
-                        </a>
-                    </li>
+        function adjustPlayerHeight() {
+            if (window.innerWidth >= 768) {
+                player.style.height = '100vh';
+            } else {
+                player.style.height = '35vh';
+            }
+        }
+
+        const config = {
+            maxBufferLength: 30,
+            maxMaxBufferLength: 600,
+            manifestLoadingTimeOut: 10000,
+            manifestLoadingMaxRetry: 5,
+            levelLoadingTimeOut: 10000,
+            levelLoadingMaxRetry: 5
+        };
+
+        function playChannel(url) {
+            // Destroy previous HLS instance if exists
+            if (currentHls) {
+                currentHls.destroy();
+                currentHls = null;
+            }
+
+            if (Hls.isSupported()) {
+                currentHls = new Hls(config);
+                currentHls.loadSource(url);
+                currentHls.attachMedia(player);
+                currentHls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    player.play().catch(error => {
+                        console.error('Error playing channel:', error);
+                    });
+                });
+                
+                currentHls.on(Hls.Events.ERROR, function(event, data) {
+                    if (data.fatal) {
+                        switch(data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                console.log("Network error, trying to recover...");
+                                currentHls.startLoad();
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                console.log("Media error, trying to recover...");
+                                currentHls.recoverMediaError();
+                                break;
+                            default:
+                                currentHls.destroy();
+                                break;
+                        }
+                    }
+                });
+            }
+            // For browsers that natively support HLS
+            else if (player.canPlayType('application/vnd.apple.mpegurl')) {
+                player.src = url;
+                player.addEventListener('loadedmetadata', function() {
+                    player.play();
+                });
+            }
+        }
+
+        async function loadChannels() {
+            try {
+                const response = await fetch('https://m3u.ch/pl/97e33d069f37a84c2c15ab1296a5716f_d761f9a430ed13528cc0cf25e8efcc18.m3u');
+                const playlist = await response.text();
+                const lines = playlist.split('\n');
+                const channels = [];
+
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].startsWith('#EXTINF')) {
+                        const name = lines[i].split(',')[1];
+                        const url = lines[i + 1];
+                        const logoMatch = lines[i].match(/tvg-logo="(.*?)"/);
+                        const logo = logoMatch ? logoMatch[1] : '';
+                        if (url && url.startsWith('http')) {
+                            channels.push({ name, url, logo });
+                        }
+                    }
+                }
+
+                renderChannels(channels);
+            } catch (error) {
+                console.error('Error loading channels:', error);
+            }
+        }
+
+        function renderChannels(channels) {
+            const channelList = document.getElementById('channel-list');
+            channelList.innerHTML = '';
+            channels.forEach((channel, index) => {
+                const item = document.createElement('div');
+                item.className = 'channel-item';
+                item.innerHTML = `
+                    <img src="${channel.logo || 'https://via.placeholder.com/40'}" alt="${channel.name}">
+                    <span>${channel.name}</span>
                 `;
-                channelList.append(channelItem);
+                item.onclick = () => playChannel(channel.url);
+                channelList.appendChild(item);
+
+                if (index === 0) {
+                    playChannel(channel.url);
+                }
             });
         }
 
-    
-        $('.nav-link').on('click', function() {
-            const type = $(this).data('type');
-            $('.nav-link').removeClass('active');
-            $(this).addClass('active');
-
-            channelList.empty();
-            data[type].forEach(channel => {
-                const channelItem = `
-                    <li class="${type}">
-                        <a href="#" onclick="changeChannel('${channel.url}')" class='channel flex-item'>
-                            <img src="${channel.logo}" alt="${channel.name}">
-                        </a>
-                    </li>
-                `;
-                channelList.append(channelItem);
+        function filterChannels() {
+            const searchInput = document.getElementById('search-input').value.toLowerCase();
+            const items = document.querySelectorAll('.channel-item');
+            items.forEach(item => {
+                const name = item.querySelector('span').textContent.toLowerCase();
+                item.style.display = name.includes(searchInput) ? 'flex' : 'none';
             });
-        });
-    }
-});
-
-
-function changeChannel(url) {
-    $('#player').attr('src', url);
-}
-</script>
+        }
+    </script>
 </body>
 </html>
