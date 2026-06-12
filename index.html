@@ -315,7 +315,8 @@
                 const item = document.createElement('div');
                 item.className = 'channel-item';
                 item.innerHTML = `
-                    <img src="${channel.logo || 'https://codeberg.org/arham410/Freelivebd/raw/branch/main/freebd.m3u'}" alt="${channel.name}">
+                    // This will fail to render because an M3U file is not an image
+                    <img src="${channel.logo || 'https://codeberg.org/arham410/Freelivebd/raw/branch/main/freebd.m3u'}" ...>
                     <span>${channel.name}</span>
                 `;
                 item.onclick = () => playChannel(channel.url);
