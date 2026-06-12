@@ -3,17 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASFA Live Player</title>
+    <title>ASFA Live Premium Player</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="https://i.postimg.cc/SRgsPFyg/image.png">
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #000000; color: #fff; min-height: 100vh; overflow: hidden; }
         .container { height: 100vh; display: flex; flex-direction: column; }
         .content-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        
         #player-container { width: 100%; background: #000; position: relative; }
-        #live-tv-player { width: 100%; height: 100%; background: #000; object-fit: contain; }
+        /* Video.js sizing overrides */
+        .video-js { width: 100% !important; height: 100% !important; }
         
         .channel-section { 
             background-image: url('https://i.postimg.cc/SRgsPFyg/image.png'); 
@@ -50,8 +55,8 @@
     <div class="container">
         <div class="content-wrapper">
             <div id="player-container">
-                <video id="live-tv-player" controls preload="auto">
-                    Your browser does not support the video tag.
+                <video id="live-tv-player" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto">
+                    <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video</p>
                 </video>
             </div>
             <div class="channel-section">
@@ -67,20 +72,26 @@
     </div>
 
     <script>
-        let player = document.getElementById('live-tv-player');
-        let currentHls = null;
+        let vjsPlayer = null;
         let currentPlayingUrl = '';
         const DEFAULT_LOGO = 'https://images.unsplash.com/photo-1595624871930-6e8537998592?w=100&auto=format&fit=crop&q=60';
-
         let allChannels = [];
 
-        // ADD ALL YOUR M3U PLAYLIST LINKS TO THIS ARRAY:
         const PLAYLIST_URLS = [
             'https://raw.githubusercontent.com/Fahadkhan410/bdtest/refs/heads/main/cha.m3u',
             'https://raw.githubusercontent.com/sm-monirulislam/RoarZone-Auto-Update-playlist/refs/heads/main/RoarZone.m3u'
         ];
 
         window.onload = () => {
+            // Initialize Video.js Player instance with baseline configurations
+            vjsPlayer = videojs('live-tv-player', {
+                fluid: false,
+                autoplay: false,
+                controls: true,
+                responsive: true,
+                userActions: { doubleClick: true }
+            });
+
             loadAllPlaylists();
             adjustPlayerHeight();
             document.getElementById('search-input').addEventListener('input', filterChannels);
@@ -89,92 +100,62 @@
         window.onresize = adjustPlayerHeight;
 
         function adjustPlayerHeight() {
+            const el = document.getElementById('player-container');
+            if (!el) return;
             if (window.innerWidth >= 768) {
-                player.style.height = '100vh';
+                el.style.height = '100vh';
             } else {
-                player.style.height = '35vh';
+                el.style.height = '35vh';
             }
         }
 
-        const hlsConfig = {
-            maxBufferLength: 30,
-            maxMaxBufferLength: 600,
-            manifestLoadingTimeOut: 10000,
-            manifestLoadingMaxRetry: 5,
-            levelLoadingTimeOut: 10000,
-            levelLoadingMaxRetry: 5,
-            xhrSetup: function (xhr, url) {
-                xhr.withCredentials = false;
-            }
-        };
-
-        // Helper function to clean query strings and check actual video file variants
-        function isStandardVideoFile(url) {
+        // Expanded validation logic to detect format profiles cleanly
+        function getMimeType(url) {
             const cleanUrl = url.split('?')[0].split('#')[0].toLowerCase();
-            return cleanUrl.endsWith('.mp4') || 
-                   cleanUrl.endsWith('.mkv') || 
-                   cleanUrl.endsWith('.webm') || 
-                   cleanUrl.endsWith('.avi') || 
-                   cleanUrl.endsWith('.mov');
+            if (cleanUrl.endsWith('.m3u8')) return 'application/x-mpegURL';
+            if (cleanUrl.endsWith('.mp4')) return 'video/mp4';
+            if (cleanUrl.endsWith('.webm')) return 'video/webm';
+            if (cleanUrl.endsWith('.ogg')) return 'video/ogg';
+            if (cleanUrl.endsWith('.mkv')) return 'video/mp4'; // Route MKV via MP4 stream container decoder pipeline
+            return null; 
         }
 
         function playChannel(url) {
             if (currentPlayingUrl === url) return; 
             currentPlayingUrl = url;
 
-            // Clean up running HLS engines if switching away
-            if (currentHls) {
-                currentHls.destroy();
-                currentHls = null;
-            }
-            player.pause();
-            player.removeAttribute('src');
-            player.load();
-
             let streamUrl = url;
+            // SSL Mixed Content protection rule wrapper
             if (window.location.protocol === 'https:' && streamUrl.startsWith('http://')) {
-                console.log("HTTPS deployment routing raw target via secure proxy wrapper...");
+                console.log("Routing live HTTP stream through secure SSL reverse proxy wrapper...");
                 streamUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(streamUrl);
             }
 
-            // Engine Decision Logic: Standard Media Files vs Streaming Manifest Protocols
-            if (isStandardVideoFile(url)) {
-                console.log("Standard video file target detected. Initializing browser native playback engine...");
-                player.src = streamUrl;
-                player.load();
-                player.play().catch(error => console.error('Native file playback failed:', error));
-            } else {
-                console.log("Streaming manifest format detected. Initializing HLS subsystem...");
-                if (Hls.isSupported()) {
-                    currentHls = new Hls(hlsConfig);
-                    currentHls.loadSource(streamUrl);
-                    currentHls.attachMedia(player);
-                    currentHls.on(Hls.Events.MANIFEST_PARSED, function() {
-                        player.play().catch(error => console.error('HLS playback initialization failed:', error));
-                    });
-                    
-                    currentHls.on(Hls.Events.ERROR, function(event, data) {
-                        if (data.fatal) {
-                            switch(data.type) {
-                                case Hls.ErrorTypes.NETWORK_ERROR:
-                                    currentHls.startLoad();
-                                    break;
-                                case Hls.ErrorTypes.MEDIA_ERROR:
-                                    currentHls.recoverMediaError();
-                                    break;
-                                default:
-                                    currentHls.destroy();
-                                    break;
-                            }
+            let type = getMimeType(url);
+            
+            // If the format falls completely outside basic parameters, default back to HLS adaptive parsing
+            if (!type) {
+                type = 'application/x-mpegURL';
+            }
+
+            console.log(`Setting stream resource source target type to: ${type}`);
+
+            vjsPlayer.ready(function() {
+                vjsPlayer.src({ src: streamUrl, type: type });
+                vjsPlayer.load();
+                
+                // Attempt play execution capture handling custom device limitations gracefully
+                let playPromise = vjsPlayer.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.warn("Playback initialization intercepted or delayed:", error);
+                        // If it fails on desktop due to a raw MKV codec bug, try pulling it natively via generic fallback source routing
+                        if(url.toLowerCase().includes('.mkv') || url.toLowerCase().includes('.avi')) {
+                             alert("Notice: This specific video file uses an MKV container codec profile that your web browser cannot decode directly. Convert the file stream to H264 MP4 format for compatibility.");
                         }
                     });
-                } else if (player.canPlayType('application/vnd.apple.mpegurl')) {
-                    player.src = streamUrl;
-                    player.addEventListener('loadedmetadata', function() {
-                        player.play().catch(error => console.error('Native Apple HLS playback failed:', error));
-                    });
                 }
-            }
+            });
 
             highlightActiveChannelItem();
         }
