@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,185 +8,28 @@
     <link rel="icon" type="image/png" href="https://i.postimg.cc/SRgsPFyg/image.png">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #000000;
-            color: #fff;
-            min-height: 100vh;
-            overflow: hidden;
-        }
-
-        .container {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .content-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        #player-container {
-            width: 100%;
-            background: #000;
-            position: relative;
-        }
-
-        #live-tv-player {
-            width: 100%;
-            height: 100%;
-            background: #000;
-            object-fit: contain;
-        }
-
-        .channel-section {
-            background-image: url('https://i.postimg.cc/SRgsPFyg/image.png');
-            background-size: cover;
-            background-position: center;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .search-bar {
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.9);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .search-bar input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            outline: none;
-            background: rgba(255, 255, 255, 0.1);
-            color: #ffffff;
-            font-size: 16px;
-        }
-
-        .channel-list {
-            flex: 1;
-            overflow-y: auto;
-            background: rgba(0, 0, 0, 0.8);
-        }
-
-        .channel-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .channel-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .channel-item img {
-            width: 40px;
-            height: 40px;
-            margin-right: 15px;
-            border-radius: 8px;
-            object-fit: cover;
-        }
-
-        .channel-item span {
-            color: #fff;
-            font-size: 15px;
-        }
-
-        .footer {
-            padding: 10px;
-            text-align: center;
-            background: rgba(0, 0, 0, 0.9);
-        }
-
-        .footer a {
-            color: #ffffff;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .channel-list::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .channel-list::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        .channel-list::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-        }
-
-        @media (min-width: 768px) {
-            .content-wrapper {
-                flex-direction: row;
-            }
-
-            #player-container {
-                flex: 0 0 70%;
-                height: 100vh;
-            }
-
-            .channel-section {
-                width: 30%;
-                min-width: 30%;
-            }
-        }
-
-        @media (max-width: 767px) {
-            body {
-                overflow: auto;
-            }
-
-            .container {
-                height: auto;
-            }
-
-            #player-container {
-                height: 35vh;
-            }
-
-            .channel-section {
-                height: 65vh;
-            }
-
-            .channel-list {
-                max-height: calc(65vh - 110px);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .channel-item {
-                padding: 10px;
-            }
-
-            .channel-item img {
-                width: 35px;
-                height: 35px;
-                margin-right: 10px;
-            }
-
-            .channel-item span {
-                font-size: 14px;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #000000; color: #fff; min-height: 100vh; overflow: hidden; }
+        .container { height: 100vh; display: flex; flex-direction: column; }
+        .content-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        #player-container { width: 100%; background: #000; position: relative; }
+        #live-tv-player { width: 100%; height: 100%; background: #000; object-fit: contain; }
+        .channel-section { background-image: url('https://i.postimg.cc/SRgsPFyg/image.png'); background-size: cover; background-position: center; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .search-bar { padding: 10px; background: rgba(0, 0, 0, 0.9); position: sticky; top: 0; z-index: 10; }
+        .search-bar input { width: 100%; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; outline: none; background: rgba(255, 255, 255, 0.1); color: #ffffff; font-size: 16px; }
+        .channel-list { flex: 1; overflow-y: auto; background: rgba(0, 0, 0, 0.8); }
+        .channel-item { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; transition: background 0.2s; }
+        .channel-item:hover { background: rgba(255, 255, 255, 0.1); }
+        .channel-item img { width: 40px; height: 40px; margin-right: 15px; border-radius: 8px; object-fit: cover; }
+        .channel-item span { color: #fff; font-size: 15px; }
+        .footer { padding: 10px; text-align: center; background: rgba(0, 0, 0, 0.9); }
+        .footer a { color: #ffffff; text-decoration: none; font-size: 14px; }
+        .channel-list::-webkit-scrollbar { width: 6px; }
+        .channel-list::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
+        .channel-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
+        @media (min-width: 768px) { .content-wrapper { flex-direction: row; } #player-container { flex: 0 0 70%; height: 100vh; } .channel-section { width: 30%; min-width: 30%; } }
+        @media (max-width: 767px) { body { overflow: auto; } .container { height: auto; } #player-container { height: 35vh; } .channel-section { height: 65vh; } .channel-list { max-height: calc(65vh - 110px); } }
+        @media (max-width: 480px) { .channel-item { padding: 10px; } .channel-item img { width: 35px; height: 35px; margin-right: 10px; } .channel-item span { font-size: 14px; } }
     </style>
 </head>
 <body>
@@ -198,10 +40,9 @@
                     Your browser does not support the video tag.
                 </video>
             </div>
-
             <div class="channel-section">
                 <div class="search-bar">
-                    <input type="text" id="search-input" placeholder="Search channels..." onkeyup="filterChannels()">
+                    <input type="text" id="search-input" placeholder="Search channels...">
                 </div>
                 <div class="channel-list" id="channel-list"></div>
                 <div class="footer">
@@ -211,18 +52,20 @@
         </div>
     </div>
 
-<script>
+    <script>
         let player = document.getElementById('live-tv-player');
         let currentHls = null;
-
-        // Fallback image for missing channel logos
         const DEFAULT_LOGO = 'https://images.unsplash.com/photo-1595624871930-6e8537998592?w=100&auto=format&fit=crop&q=60';
 
+        // ADD ALL YOUR M3U PLAYLIST LINKS TO THIS ARRAY:
+        const PLAYLIST_URLS = [
+            'https://raw.githubusercontent.com/Fahadkhan410/bdtest/refs/heads/main/cha.m3u',
+            'https://raw.githubusercontent.com/sm-monirulislam/RoarZone-Auto-Update-playlist/refs/heads/main/RoarZone.m3u'
+        ];
+
         window.onload = () => {
-            loadChannels();
+            loadAllPlaylists();
             adjustPlayerHeight();
-            
-            // Modern, smoother search listener
             document.getElementById('search-input').addEventListener('input', filterChannels);
         };
 
@@ -263,11 +106,9 @@
                     if (data.fatal) {
                         switch(data.type) {
                             case Hls.ErrorTypes.NETWORK_ERROR:
-                                console.log("Network error, trying to recover...");
                                 currentHls.startLoad();
                                 break;
                             case Hls.ErrorTypes.MEDIA_ERROR:
-                                console.log("Media error, trying to recover...");
                                 currentHls.recoverMediaError();
                                 break;
                             default:
@@ -276,8 +117,7 @@
                         }
                     }
                 });
-            }
-            else if (player.canPlayType('application/vnd.apple.mpegurl')) {
+            } else if (player.canPlayType('application/vnd.apple.mpegurl')) {
                 player.src = url;
                 player.addEventListener('loadedmetadata', function() {
                     player.play().catch(error => console.error('Native playback failed:', error));
@@ -285,58 +125,72 @@
             }
         }
 
-        async function loadChannels() {
+        // Fetches a single playlist and extracts channels
+        async function fetchPlaylist(url) {
             try {
-                const response = await fetch('https://raw.githubusercontent.com/Fahadkhan410/bdtest/refs/heads/main/cha.m3u');
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                // If fetching a Codeberg link or a generic server, you might run into CORS issues.
+                // If a link fails to load, wrap it in a proxy: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url)
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 
-                const playlist = await response.text();
-                const lines = playlist.split('\n');
+                const playlistText = await response.text();
+                const lines = playlistText.split('\n');
                 const channels = [];
 
                 for (let i = 0; i < lines.length; i++) {
                     let currentLine = lines[i].trim();
-                    
                     if (currentLine.startsWith('#EXTINF')) {
-                        // Extract name safely
                         const infoParts = currentLine.split(',');
                         const name = infoParts.length > 1 ? infoParts[1].trim() : 'Unknown Channel';
                         
-                        // Extract logo safely via Regex
                         const logoMatch = currentLine.match(/tvg-logo="(.*?)"/);
                         const logo = logoMatch ? logoMatch[1].trim() : '';
                         
-                        // Robustly search for the upcoming stream URL line
-                        let url = '';
+                        let streamUrl = '';
                         for (let j = i + 1; j < lines.length; j++) {
                             let nextLine = lines[j].trim();
-                            if (nextLine.startsWith('#')) continue; // Skip extra meta tags
-                            if (nextLine.length === 0) continue;    // Skip empty spaces
+                            if (nextLine.startsWith('#') || nextLine.length === 0) continue;
                             if (nextLine.startsWith('http')) {
-                                url = nextLine;
-                                i = j; // Advance main loop index past the URL line
+                                streamUrl = nextLine;
+                                i = j; 
                                 break;
                             }
                         }
 
-                        if (url) {
-                            channels.push({ name, url, logo });
+                        if (streamUrl) {
+                            channels.push({ name, url: streamUrl, logo });
                         }
                     }
                 }
-
-                renderChannels(channels);
+                return channels;
             } catch (error) {
-                console.error('Error loading channels:', error);
+                console.error(`Failed to load playlist from ${url}:`, error);
+                return []; // Return empty list on failure so other lists still load
             }
+        }
+
+        // Loads all listed M3U links asynchronously
+        async function loadAllPlaylists() {
+            let combinedChannels = [];
+            
+            // Fetch everything in parallel
+            const requests = PLAYLIST_URLS.map(url => fetchPlaylist(url));
+            const results = await Promise.all(requests);
+            
+            // Merge results together
+            results.forEach(channelsArray => {
+                combinedChannels = combinedChannels.concat(channelsArray);
+            });
+
+            renderChannels(combinedChannels);
         }
 
         function renderChannels(channels) {
             const channelList = document.getElementById('channel-list');
             channelList.innerHTML = '';
             
-            if(channels.length === 0) {
-                channelList.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No channels found</div>';
+            if (channels.length === 0) {
+                channelList.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No channels loaded</div>';
                 return;
             }
 
@@ -350,7 +204,6 @@
                 item.onclick = () => playChannel(channel.url);
                 channelList.appendChild(item);
 
-                // Auto-play first channel
                 if (index === 0) {
                     playChannel(channel.url);
                 }
@@ -360,7 +213,6 @@
         function filterChannels() {
             const searchInput = document.getElementById('search-input').value.toLowerCase().trim();
             const items = document.querySelectorAll('.channel-item');
-            
             items.forEach(item => {
                 const name = item.querySelector('span').textContent.toLowerCase();
                 item.style.display = name.includes(searchInput) ? 'flex' : 'none';
