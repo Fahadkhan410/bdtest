@@ -3,65 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASFA Live Premium Player</title>
+    <title>ASFA Live</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="https://i.postimg.cc/SRgsPFyg/image.png">
-    
-    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
-    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #000000; color: #fff; min-height: 100vh; overflow: hidden; }
         .container { height: 100vh; display: flex; flex-direction: column; }
         .content-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        
         #player-container { width: 100%; background: #000; position: relative; }
-        /* Video.js sizing overrides */
-        .video-js { width: 100% !important; height: 100% !important; }
-        
-        .channel-section { 
-            background-image: url('https://i.postimg.cc/SRgsPFyg/image.png'); 
-            background-size: cover; 
-            background-position: center; 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
-        }
-        .search-bar { padding: 10px; background: rgba(0, 0, 0, 0.9); position: sticky; top: 0; z-index: 10; flex-shrink: 0; }
+        #live-tv-player { width: 100%; height: 100%; background: #000; object-fit: contain; }
+        .channel-section { background-image: url('https://i.postimg.cc/SRgsPFyg/image.png'); background-size: cover; background-position: center; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .search-bar { padding: 10px; background: rgba(0, 0, 0, 0.9); position: sticky; top: 0; z-index: 10; }
         .search-bar input { width: 100%; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; outline: none; background: rgba(255, 255, 255, 0.1); color: #ffffff; font-size: 16px; }
         .channel-list { flex: 1; overflow-y: auto; background: rgba(0, 0, 0, 0.8); }
-        
         .channel-item { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; transition: background 0.2s; }
         .channel-item:hover { background: rgba(255, 255, 255, 0.1); }
-        .channel-item.active-channel { background: rgba(255, 255, 255, 0.2); border-left: 4px solid #fff; }
-        
         .channel-item img { width: 40px; height: 40px; margin-right: 15px; border-radius: 8px; object-fit: cover; }
         .channel-item span { color: #fff; font-size: 15px; }
-        .footer { padding: 10px; text-align: center; background: rgba(0, 0, 0, 0.9); flex-shrink: 0; }
+        .footer { padding: 10px; text-align: center; background: rgba(0, 0, 0, 0.9); }
         .footer a { color: #ffffff; text-decoration: none; font-size: 14px; }
-        
         .channel-list::-webkit-scrollbar { width: 6px; }
         .channel-list::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
         .channel-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
-        
         @media (min-width: 768px) { .content-wrapper { flex-direction: row; } #player-container { flex: 0 0 70%; height: 100vh; } .channel-section { width: 30%; min-width: 30%; } }
         @media (max-width: 767px) { body { overflow: auto; } .container { height: auto; } #player-container { height: 35vh; } .channel-section { height: 65vh; } .channel-list { max-height: calc(65vh - 110px); } }
         @media (max-width: 480px) { .channel-item { padding: 10px; } .channel-item img { width: 35px; height: 35px; margin-right: 10px; } .channel-item span { font-size: 14px; } }
     </style>
+    
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function(e) {
+            if (e.keyCode == 123) return false; // F12
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 73) return false; // Ctrl+Shift+I
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 67) return false; // Ctrl+Shift+C
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 74) return false; // Ctrl+Shift+J
+            if (e.ctrlKey && e.keyCode == 85) return false; // Ctrl+U (View Source)
+        };
+    </script>
 </head>
 <body>
     <div class="container">
         <div class="content-wrapper">
             <div id="player-container">
-                <video id="live-tv-player" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto">
-                    <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video</p>
+                <video id="live-tv-player" controls preload="auto" controlsList="nodownload">
+                    Your browser does not support the video tag.
                 </video>
             </div>
             <div class="channel-section">
                 <div class="search-bar">
-                    <input type="text" id="search-input" placeholder="Search files & channels...">
+                    <input type="text" id="search-input" placeholder="Search channels...">
                 </div>
                 <div class="channel-list" id="channel-list"></div>
                 <div class="footer">
@@ -72,26 +64,22 @@
     </div>
 
     <script>
-        let vjsPlayer = null;
-        let currentPlayingUrl = '';
-        const DEFAULT_LOGO = 'https://images.unsplash.com/photo-1595624871930-6e8537998592?w=100&auto=format&fit=crop&q=60';
+        // Simple Base64 decoding helper function to read protected data variables safely at runtime
+        function _0xdecode(str) { return atob(str); }
+
+        let player = document.getElementById('live-tv-player');
+        let currentHls = null;
+        const DEFAULT_LOGO = _0xdecode('aHR0cHM6Ly9pbWFnZXMudW5zcGxhc2guY29tL3Bob3RvLTE1OTU2MjQ4NzE5MzAtNmU4NTM3OTk4NTkyP3c9MTAwJmF1dG89Zm9ybWF0JmZpdD1jcm9wJnE9NjA=');
+
         let allChannels = [];
 
+        // ENCODED PLAYLIST URLS (Protected using Base64 strings):
         const PLAYLIST_URLS = [
-            'https://raw.githubusercontent.com/Fahadkhan410/bdtest/refs/heads/main/cha.m3u',
-            'https://raw.githubusercontent.com/sm-monirulislam/RoarZone-Auto-Update-playlist/refs/heads/main/RoarZone.m3u'
+            _0xdecode('aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0ZhaGFka2hhbjQxMC9iZHRlc3QvcmVmcy9oZWFkcy9tYWluL2NoYS5tM3U='),
+            _0xdecode('aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3NtLW1vbmlydWxpc2xhbS9Sb2FyWm9uZS1BdXRvLVVwZGF0ZS1wbGF5bGlzdC9yZWZzL2hlYWRzL21haW4vUm9hclpvbmUubTN1')
         ];
 
         window.onload = () => {
-            // Initialize Video.js Player instance with baseline configurations
-            vjsPlayer = videojs('live-tv-player', {
-                fluid: false,
-                autoplay: false,
-                controls: true,
-                responsive: true,
-                userActions: { doubleClick: true }
-            });
-
             loadAllPlaylists();
             adjustPlayerHeight();
             document.getElementById('search-input').addEventListener('input', filterChannels);
@@ -100,81 +88,71 @@
         window.onresize = adjustPlayerHeight;
 
         function adjustPlayerHeight() {
-            const el = document.getElementById('player-container');
-            if (!el) return;
             if (window.innerWidth >= 768) {
-                el.style.height = '100vh';
+                player.style.height = '100vh';
             } else {
-                el.style.height = '35vh';
+                player.style.height = '35vh';
             }
         }
 
-        // Expanded validation logic to detect format profiles cleanly
-        function getMimeType(url) {
-            const cleanUrl = url.split('?')[0].split('#')[0].toLowerCase();
-            if (cleanUrl.endsWith('.m3u8')) return 'application/x-mpegURL';
-            if (cleanUrl.endsWith('.mp4')) return 'video/mp4';
-            if (cleanUrl.endsWith('.webm')) return 'video/webm';
-            if (cleanUrl.endsWith('.ogg')) return 'video/ogg';
-            if (cleanUrl.endsWith('.mkv')) return 'video/mp4'; // Route MKV via MP4 stream container decoder pipeline
-            return null; 
-        }
+        const config = {
+            maxBufferLength: 30,
+            maxMaxBufferLength: 600,
+            manifestLoadingTimeOut: 10000,
+            manifestLoadingMaxRetry: 5,
+            levelLoadingTimeOut: 10000,
+            levelLoadingMaxRetry: 5,
+            xhrSetup: function (xhr, url) {
+                xhr.withCredentials = false;
+            }
+        };
 
         function playChannel(url) {
-            if (currentPlayingUrl === url) return; 
-            currentPlayingUrl = url;
-
-            let streamUrl = url;
-            // SSL Mixed Content protection rule wrapper
-            if (window.location.protocol === 'https:' && streamUrl.startsWith('http://')) {
-                console.log("Routing live HTTP stream through secure SSL reverse proxy wrapper...");
-                streamUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(streamUrl);
+            if (currentHls) {
+                currentHls.destroy();
+                currentHls = null;
             }
 
-            let type = getMimeType(url);
-            
-            // If the format falls completely outside basic parameters, default back to HLS adaptive parsing
-            if (!type) {
-                type = 'application/x-mpegURL';
+            // Secure validation block handling mixed HTTP/HTTPS protocol layers smoothly
+            if (window.location.protocol === _0xdecode('aHR0cHM6Og==') && url.startsWith(_0xdecode('aHR0cDovLw=='))) {
+                url = _0xdecode('aHR0cHM6Ly9hcGkuYWxsb3JpZ2lucy53aW4vcmF3P3VybD0=') + encodeURIComponent(url);
             }
 
-            console.log(`Setting stream resource source target type to: ${type}`);
-
-            vjsPlayer.ready(function() {
-                vjsPlayer.src({ src: streamUrl, type: type });
-                vjsPlayer.load();
+            if (Hls.isSupported()) {
+                currentHls = new Hls(config);
+                currentHls.loadSource(url);
+                currentHls.attachMedia(player);
+                currentHls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    player.play().catch(error => {});
+                });
                 
-                // Attempt play execution capture handling custom device limitations gracefully
-                let playPromise = vjsPlayer.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        console.warn("Playback initialization intercepted or delayed:", error);
-                        // If it fails on desktop due to a raw MKV codec bug, try pulling it natively via generic fallback source routing
-                        if(url.toLowerCase().includes('.mkv') || url.toLowerCase().includes('.avi')) {
-                             alert("Notice: This specific video file uses an MKV container codec profile that your web browser cannot decode directly. Convert the file stream to H264 MP4 format for compatibility.");
+                currentHls.on(Hls.Events.ERROR, function(event, data) {
+                    if (data.fatal) {
+                        switch(data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                currentHls.startLoad();
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                currentHls.recoverMediaError();
+                                break;
+                            default:
+                                currentHls.destroy();
+                                break;
                         }
-                    });
-                }
-            });
-
-            highlightActiveChannelItem();
-        }
-
-        function highlightActiveChannelItem() {
-            const items = document.querySelectorAll('.channel-item');
-            items.forEach(item => {
-                if (item.dataset.url === currentPlayingUrl) {
-                    item.classList.add('active-channel');
-                } else {
-                    item.classList.remove('active-channel');
-                }
-            });
+                    }
+                });
+            } else if (player.canPlayType(_0xdecode('YXBwbGljYXRpb24vdm5kLmFwcGxlLm1wZWd1cmw='))) {
+                player.src = url;
+                player.addEventListener('loadedmetadata', function() {
+                    player.play().catch(error => {});
+                });
+            }
         }
 
         async function fetchPlaylist(url) {
             try {
                 const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                if (!response.ok) throw new Error();
                 
                 const playlistText = await response.text();
                 const lines = playlistText.split('\n');
@@ -182,9 +160,9 @@
 
                 for (let i = 0; i < lines.length; i++) {
                     let currentLine = lines[i].trim();
-                    if (currentLine.startsWith('#EXTINF')) {
+                    if (currentLine.startsWith(_0xdecode('I0VYVElORg=='))) {
                         const infoParts = currentLine.split(',');
-                        const name = infoParts.length > 1 ? infoParts[1].trim() : 'Unknown Item';
+                        const name = infoParts.length > 1 ? infoParts[1].trim() : _0xdecode('VW5rbm93biBDaGFubmVs');
                         
                         const logoMatch = currentLine.match(/tvg-logo="(.*?)"/);
                         const logo = logoMatch ? logoMatch[1].trim() : '';
@@ -193,7 +171,7 @@
                         for (let j = i + 1; j < lines.length; j++) {
                             let nextLine = lines[j].trim();
                             if (nextLine.startsWith('#') || nextLine.length === 0) continue;
-                            if (nextLine.startsWith('http')) {
+                            if (nextLine.startsWith(_0xdecode('aHR0cA=='))) {
                                 streamUrl = nextLine;
                                 i = j; 
                                 break;
@@ -207,7 +185,6 @@
                 }
                 return channels;
             } catch (error) {
-                console.error(`Failed to load playlist from ${url}:`, error);
                 return [];
             }
         }
@@ -230,19 +207,13 @@
             channelList.innerHTML = '';
             
             if (channels.length === 0) {
-                channelList.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No items found</div>';
+                channelList.innerHTML = _0xdecode('PGRpdiBzdHlsZT0icGFkZGluZzogMjBweDsgdGV4dC1hbGlnbjogY2VudGVyOyBjb2xvcjogIzg4ODsiPk5vIGNoYW5uZWxzIGZvdW5kPC9kaXY+');
                 return;
             }
 
             channels.forEach((channel, index) => {
                 const item = document.createElement('div');
                 item.className = 'channel-item';
-                item.dataset.url = channel.url;
-                
-                if (channel.url === currentPlayingUrl) {
-                    item.classList.add('active-channel');
-                }
-
                 item.innerHTML = `
                     <img src="${channel.logo || DEFAULT_LOGO}" alt="${channel.name}" onerror="this.src='${DEFAULT_LOGO}'">
                     <span>${channel.name}</span>
@@ -258,16 +229,13 @@
 
         function filterChannels() {
             const searchInput = document.getElementById('search-input').value.toLowerCase().trim();
-            
             if (searchInput === '') {
                 renderChannels(allChannels, false);
                 return;
             }
-
             const filtered = allChannels.filter(channel => 
                 channel.name.toLowerCase().includes(searchInput)
             );
-
             renderChannels(filtered, false);
         }
     </script>
