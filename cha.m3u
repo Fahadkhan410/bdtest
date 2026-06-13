@@ -1,10 +1,10 @@
 #EXTM3U
 #EXTINF:-1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", PTV
-http://198.195.239.50:8095/ptv/tracks-v1a1/mono.m3u8
+http://198.195.239.50:8095/ptv/index.m3u8
 #EXTINF:-1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", SM
 https://live.thebosstv.com:30443/dwlive/Somoy-TV/playlist.m3u8
 #EXTINF:-1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", TS
-http://198.195.239.50:8095/tsports/tracks-v1a1/mono.m3u8
+http://198.195.239.50:8095/tsports/index.m3u8
 --------------
 #EXTINF:-1 tvg-id="historytv" tvg-name="History TV 18" tvg-logo="https://static.wikia.nocookie.net/logopedia/images/0/0d/History_TV18.jpg" group-title="FREE-BD", History TV 18
 https://live.thebosstv.com:30443/dwlive/HISTORY/playlist.m3u8
