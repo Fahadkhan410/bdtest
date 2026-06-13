@@ -160,31 +160,50 @@
                 if (!response.ok) throw new Error();
                 
                 const playlistText = await response.text();
+                // Normalize lines and trim out dirty carriage return bytes (\r)
                 const lines = playlistText.split('\n').map(line => line.replace('\r', '').trim());
                 const channels = [];
 
                 for (let i = 0; i < lines.length; i++) {
                     let currentLine = lines[i];
+                    
                     if (currentLine.startsWith('#EXTINF')) {
-                        const infoParts = currentLine.split(',');
-                        const name = infoParts.length > 1 ? infoParts[1].trim() : 'Unknown Channel';
+                        // Universal Attribute Matchers via Regular Expressions
+                        const logoMatch = currentLine.match(/tvg-logo="([^"]*)"/) || currentLine.match(/logo="([^"]*)"/);
+                        const tvgNameMatch = currentLine.match(/tvg-name="([^"]*)"/);
                         
-                        const logoMatch = currentLine.match(/tvg-logo="(.*?)"/);
+                        // Universal Channel Name Extraction Strategy
+                        let name = 'Unknown Channel';
+                        const commaIndex = currentLine.lastIndexOf(',');
+                        
+                        if (commaIndex !== -1 && commaIndex < currentLine.length - 1) {
+                            name = currentLine.substring(commaIndex + 1).trim();
+                        } else if (tvgNameMatch) {
+                            name = tvgNameMatch[1].trim();
+                        }
+                        
                         const logo = logoMatch ? logoMatch[1].trim() : '';
-                        
                         let streamUrl = '';
+                        
+                        // Resilient forward loop looking for the streaming URL asset block
                         for (let j = i + 1; j < lines.length; j++) {
                             let nextLine = lines[j];
                             if (nextLine.length === 0) continue; 
+                            
+                            // If we intercept an informational entry before finding a valid link, drop entry window
+                            if (nextLine.startsWith('#EXTINF')) {
+                                break; 
+                            }
+                            
+                            // Skip secondary track headers or internal option hashes completely
                             if (nextLine.startsWith('#')) {
-                                if (nextLine.startsWith('#EXTINF')) {
-                                    break; 
-                                }
                                 continue;
                             }
-                            if (nextLine.startsWith('http')) {
+                            
+                            // Route target URL string matches seamlessly
+                            if (nextLine.startsWith('http://') || nextLine.startsWith('https://') || nextLine.startsWith('http')) {
                                 streamUrl = nextLine;
-                                i = j; 
+                                i = j; // Catch index alignment window up to avoid duplicated parse processes
                                 break;
                             }
                         }
