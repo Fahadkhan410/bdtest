@@ -53,15 +53,11 @@
     </div>
 
     <script>
-        // Anti-inspection / Protection Layer
+        // Anti-inspection Layer
         (function() {
             document.addEventListener('contextmenu', e => e.preventDefault());
             document.addEventListener('keydown', e => {
-                if (
-                    e.key === 'F12' ||
-                    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
-                    (e.ctrlKey && e.key === 'u')
-                ) {
+                if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || (e.ctrlKey && e.key === 'u')) {
                     e.preventDefault();
                     return false;
                 }
@@ -73,18 +69,17 @@
         const DEFAULT_LOGO = 'https://images.unsplash.com/photo-1595624871930-6e8537998592?w=100&auto=format&fit=crop&q=60';
         let allChannels = [];
 
-        // Encoded Assets Array (Base64)
+        // Base64 Obfuscated Core Strings (Playlists & Fallback CORS Proxies)
         const _0x4f2a = [
             "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0ZhaGFka2hhbjQxMC9iZHRlc3QvcmVmcy9oZWFkcy9tYWluL2NoYS5tM3U=",
             "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2FidXNhZWVpZHgvQkR4VFYvcmVmcy9oZWFkcy9tYWluL2NoYW5uZWxzX3BsMi5tM3U=",
-            "aHR0cHM6Ly9hcGkuYWxsb3JpZ2lucy53aW4vcmF3P3VybD0="
+            "aHR0cHM6Ly9hcGkuYWxsb3JpZ2lucy53aW4vcmF3P3VybD0=" // Proxy 1
         ];
 
-        // This array supports BOTH standard M3U file links AND raw direct stream links (like .m3u8 / .mp4 / .ts)
+        // Supports M3U files, M3U8 files, and Raw Direct Stream URLs mixed together
         const PLAYLIST_URLS = [
             atob(_0x4f2a[0]),
             atob(_0x4f2a[1])
-            // Example: You can safely drop any raw direct link here, like: "https://example.com/live/stream.m3u8"
         ];
 
         window.onload = () => {
@@ -106,22 +101,26 @@
         const config = {
             maxBufferLength: 30,
             maxMaxBufferLength: 600,
-            manifestLoadingTimeOut: 10000,
-            manifestLoadingMaxRetry: 5,
-            levelLoadingTimeOut: 10000,
-            levelLoadingMaxRetry: 5,
+            manifestLoadingTimeOut: 15000,
+            manifestLoadingMaxRetry: 6,
+            levelLoadingTimeOut: 15000,
+            levelLoadingMaxRetry: 6,
+            enableWorker: true,
+            lowLatencyMode: true,
             xhrSetup: function (xhr, url) {
                 xhr.withCredentials = false;
             }
         };
 
-        function playChannel(url) {
+        function playChannel(url, useProxy = false) {
             if (currentHls) {
                 currentHls.destroy();
                 currentHls = null;
             }
 
-            if (window.location.protocol === 'https:' && url.startsWith('http://')) {
+            // Fix HTTP Block / Mixed Content Issues automatically
+            if ((window.location.protocol === 'https:' && url.startsWith('http://')) || useProxy) {
+                console.log("Routing stream through secure proxy resolver...");
                 url = atob(_0x4f2a[2]) + encodeURIComponent(url);
             }
 
@@ -130,14 +129,20 @@
                 currentHls.loadSource(url);
                 currentHls.attachMedia(player);
                 currentHls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    player.play().catch(error => {});
+                    player.play().catch(() => {});
                 });
                 
                 currentHls.on(Hls.Events.ERROR, function(event, data) {
                     if (data.fatal) {
                         switch(data.type) {
                             case Hls.ErrorTypes.NETWORK_ERROR:
-                                currentHls.startLoad();
+                                // If the stream fails due to a network or CORS restriction, retry one time using the Secure Proxy
+                                if (!useProxy) {
+                                    console.log("Network error detected. Attempting proxy backup line...");
+                                    playChannel(data.url || url, true);
+                                } else {
+                                    currentHls.startLoad();
+                                }
                                 break;
                             case Hls.ErrorTypes.MEDIA_ERROR:
                                 currentHls.recoverMediaError();
@@ -149,32 +154,34 @@
                     }
                 });
             } else if (player.canPlayType('application/vnd.apple.mpegurl')) {
+                // Native Safari fallback
                 player.src = url;
                 player.addEventListener('loadedmetadata', function() {
-                    player.play().catch(error => {});
+                    player.play().catch(() => {});
                 });
             }
         }
 
         async function fetchPlaylist(url) {
             try {
-                const response = await fetch(url);
+                let response = await fetch(url);
+                if (!response.ok) {
+                    // CORS Bypass for strict hosting providers
+                    response = await fetch(atob(_0x4f2a[2]) + encodeURIComponent(url));
+                }
                 if (!response.ok) throw new Error();
                 
                 const playlistText = await response.text();
                 
-                // Direct Streaming Link Interceptor Module
-                // If it doesn't start with M3U syntax headers but is an active live stream link, handle as a direct source item
-                if (!playlistText.includes('#EXTM3U') && (url.toLowerCase().includes('.m3u8') || url.toLowerCase().includes('.mp4') || url.toLowerCase().includes('.ts') || url.toLowerCase().includes('/stream') || url.startsWith('http'))) {
-                    let FallbackTitle = 'Direct Stream';
+                // Direct Link Interceptor Module
+                if (!playlistText.includes('#EXTM3U') && (url.includes('.m3u8') || url.includes('.mp4') || url.includes('.ts') || url.startsWith('http'))) {
+                    let fallbackTitle = 'DIRECT CHANNEL';
                     try {
-                        let segments = url.split('/');
-                        let fileSegment = segments[segments.length - 1].split('?')[0];
-                        if (fileSegment.length > 3) {
-                            FallbackTitle = fileSegment.replace('.m3u8', '').replace('.mp4', '').replace('.ts', '').toUpperCase();
-                        }
-                    } catch(err) {}
-                    return [{ name: FallbackTitle, url: url, logo: DEFAULT_LOGO }];
+                        let parts = url.split('/');
+                        let file = parts[parts.length - 1].split('?')[0];
+                        if (file.length > 4) fallbackTitle = file.replace('.m3u8','').replace('.mp4','').toUpperCase();
+                    } catch(e){}
+                    return [{ name: fallbackTitle, url: url, logo: DEFAULT_LOGO }];
                 }
 
                 const lines = playlistText.split('\n').map(line => line.replace('\r', '').trim());
@@ -187,7 +194,7 @@
                         const logoMatch = currentLine.match(/tvg-logo="([^"]*)"/) || currentLine.match(/logo="([^"]*)"/);
                         const tvgNameMatch = currentLine.match(/tvg-name="([^"]*)"/);
                         
-                        let name = 'Unknown Channel';
+                        let name = 'Live Channel Stream';
                         const commaIndex = currentLine.lastIndexOf(',');
                         
                         if (commaIndex !== -1 && commaIndex < currentLine.length - 1) {
@@ -202,13 +209,11 @@
                         for (let j = i + 1; j < lines.length; j++) {
                             let nextLine = lines[j];
                             if (nextLine.length === 0) continue; 
+                            if (nextLine.startsWith('#EXTINF')) break; 
                             
-                            if (nextLine.startsWith('#EXTINF')) {
-                                break; 
-                            }
-                            if (nextLine.startsWith('#')) {
-                                continue;
-                            }
+                            // Bypass metadata or user-agent tags (e.g., #EXTVLCOPT)
+                            if (nextLine.startsWith('#')) continue;
+                            
                             if (nextLine.startsWith('http://') || nextLine.startsWith('https://') || nextLine.startsWith('http')) {
                                 streamUrl = nextLine;
                                 i = j; 
@@ -223,9 +228,9 @@
                 }
                 return channels;
             } catch (error) {
-                // Last ditch local recovery fallback: If structural file fetching broke but asset itself looks like a direct link, map it directly
-                if (url.startsWith('http://') || url.startsWith('https://')) {
-                     return [{ name: 'External Link Stream', url: url, logo: DEFAULT_LOGO }];
+                // If it's a raw stream URL link that completely failed to parse as text, wrap it directly
+                if (url.startsWith('http')) {
+                    return [{ name: 'Direct Stream Line', url: url, logo: DEFAULT_LOGO }];
                 }
                 return [];
             }
