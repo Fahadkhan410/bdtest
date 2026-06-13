@@ -4,6 +4,8 @@ http://198.195.239.50:8095/ptv/tracks-v1a1/mono.m3u8
 #EXTINF:-1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", SM
 https://live.thebosstv.com:30443/dwlive/Somoy-TV/playlist.m3u8
 --------------
+#EXTINF:-1 tvg-id="historytv" tvg-name="History TV 18" tvg-logo="https://static.wikia.nocookie.net/logopedia/images/0/0d/History_TV18.jpg" group-title="FREE-BD", History TV 18
+https://live.thebosstv.com:30443/dwlive/HISTORY/playlist.m3u8
 #EXTINF:-1 tvg-id="toffee_movie" tvg-name="TOFFEE Movies" tvg-logo="https://images.toffeelive.com/images/program/2708/logo/240x240/mobile_logo_724353001725875591.png" group-title="FREE-BD", TOFFEE Movies
 https://sm-monirul.top/toffee/play/toffee_movie.m3u8
 #EXTINF:-1 tvg-id="toffee_drama" tvg-name="TOFFEE Dramas" tvg-logo="https://images.toffeelive.com/images/program/44878/logo/240x240/mobile_logo_764950001725875605.png" group-title="FREE-BD", TOFFEE Dramas
