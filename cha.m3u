@@ -1,17 +1,17 @@
 #EXTM3U
 #EXTINF:-1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", PTV
-http://198.195.239.50:8095/ptv/index.m3u8
+
 #EXTINF:-1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", SM
 https://live.thebosstv.com:30443/dwlive/Somoy-TV/playlist.m3u8
-#EXTINF:-1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", TS
-http://198.195.239.50:8095/tsports/index.m3u8
+#EXTINF:-1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", DD
+https://d3qs3d2rkhfqrt.cloudfront.net/out/v1/b17adfe543354fdd8d189b110617cddd/index_3.m3u8
 --------------
-#EXTINF:-1 tvg-id="historytv" tvg-name="History TV 18" tvg-logo="https://static.wikia.nocookie.net/logopedia/images/0/0d/History_TV18.jpg" group-title="FREE-BD", History TV 18
-https://live.thebosstv.com:30443/dwlive/HISTORY/playlist.m3u8
 #EXTINF:-1 tvg-id="toffee_movie" tvg-name="TOFFEE Movies" tvg-logo="https://images.toffeelive.com/images/program/2708/logo/240x240/mobile_logo_724353001725875591.png" group-title="FREE-BD", TOFFEE Movies
 https://sm-monirul.top/toffee/play/toffee_movie.m3u8
 #EXTINF:-1 tvg-id="toffee_drama" tvg-name="TOFFEE Dramas" tvg-logo="https://images.toffeelive.com/images/program/44878/logo/240x240/mobile_logo_764950001725875605.png" group-title="FREE-BD", TOFFEE Dramas
 https://sm-monirul.top/toffee/play/toffee_drama.m3u8
+#EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/subirkumarpaul/Logo/refs/heads/main/Channel%201.png" group-title="FREE-BD", Channel 1 News
+https://app24.jagobd.com.bd/c3VydmVyX8RpbEU9Mi8xNy8yMFDEEHGcfRgzQ6NTAgdEoaeFzbF92YWxIZTO0U0ezN1IzMyfvcEdsEfeDeKiNkVN3PTOmdFseWRtaW51aiPhnPTI2/channel1bd.stream/tracks-v1a1/mono.m3u8
 #EXTINF:-1 tvg-id="somoy_tv" tvg-name="Somoy TV" tvg-logo="https://assets-prod.services.toffeelive.com//Xi_Ga5oBNnOkwJLWkhKP/posters/ef2899d5-1ae0-4fee-aee5-45f9b0b3ba80.png" group-title="FREE-BD", Somoy TV
 https://sm-monirul.top/toffee/play/somoy_tv.m3u8
 #EXTINF:-1 tvg-id="jamuna_tv" tvg-name="Jamuna TV" tvg-logo="https://assets-prod.services.toffeelive.com/w_640,q_75,f_webp/PiL635oBEef-9-uV2uCe/posters/36f380e0-6c71-4b27-a73b-2afb3ce7e982.png" group-title="FREE-BD", Jamuna TV
@@ -110,6 +110,8 @@ https://sm-monirul.top/toffee/play/cartoon_network_hd.m3u8
 https://sm-monirul.top/toffee/play/sonypix_hd.m3u8
 #EXTINF:-1 tvg-id="zee_cafe_hd" tvg-name="Zee Cafe" tvg-logo="https://assets-prod.services.toffeelive.com/f_webp,w_400,q_100/U3QEd5YBcqxnFHJBpYzc/posters/3442d493-0c71-44b9-b12f-8e600d5eab91.png" group-title="FREE-BD", Zee Cafe
 https://sm-monirul.top/toffee/play/zee_cafe_hd.m3u8
+#EXTINF:-1 tvg-id="historytv" tvg-name="History TV 18" tvg-logo="https://static.wikia.nocookie.net/logopedia/images/0/0d/History_TV18.jpg" group-title="FREE-BD", History TV 18
+https://live.thebosstv.com:30443/dwlive/HISTORY/playlist.m3u8
 #EXTINF:-1 tvg-id="discovery_hd" tvg-name="Discovery HD" tvg-logo="https://images.toffeelive.com/images/program/18093/logo/240x240/mobile_logo_868363001673181438.png" group-title="FREE-BD", Discovery HD
 https://sm-monirul.top/toffee/play/discovery_hd.m3u8
 #EXTINF:-1 tvg-id="discovery_sd" tvg-name="Discovery" tvg-logo="https://images.toffeelive.com/images/program/18097/logo/240x240/mobile_logo_297723001673195119.png" group-title="FREE-BD", Discovery
@@ -140,6 +142,8 @@ https://sm-monirul.top/toffee/play/sony_sports_5_hd.m3u8
 https://sm-monirul.top/toffee/play/ten_cricket.m3u8
 #EXTINF:-1 tvg-id="euro_sports_hd" tvg-name="Euro Sport HD" tvg-logo="https://images.toffeelive.com/images/program/4388/logo/240x240/mobile_logo_422191001674119624.png" group-title="FREE-BD", Euro Sport HD
 https://sm-monirul.top/toffee/play/euro_sports_hd.m3u8
+#EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/subirkumarpaul/Logo/main/Star%20Sports%201%40.jpeg" group-title="FREE-BD", Star Sports 1 HD
+http://41.205.93.154/STARSPORTS1/index.m3u8
 #EXTINF:-1 tvg-id="cnn" tvg-name="CNN" tvg-logo="https://images.toffeelive.com/images/program/333/logo/240x240/mobile_logo_146607001735536058.png" group-title="FREE-BD", CNN
 https://sm-monirul.top/toffee/play/cnn.m3u8
 #EXTINF:-1 tvg-id="sports_highlights" tvg-name="TOFFEE Sports" tvg-logo="https://images.toffeelive.com/images/program/19779/logo/240x240/mobile_logo_975410001725875598.png" group-title="FREE-BD", TOFFEE Sports
