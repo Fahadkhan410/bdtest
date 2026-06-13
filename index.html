@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #000000; color: #fff; min-height: 100vh; overflow: hidden; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #000000; color: #fff; min-height: 100vh; overflow: hidden; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
         .container { height: 100vh; display: flex; flex-direction: column; }
         .content-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         #player-container { width: 100%; background: #000; position: relative; }
@@ -31,23 +31,12 @@
         @media (max-width: 767px) { body { overflow: auto; } .container { height: auto; } #player-container { height: 35vh; } .channel-section { height: 65vh; } .channel-list { max-height: calc(65vh - 110px); } }
         @media (max-width: 480px) { .channel-item { padding: 10px; } .channel-item img { width: 35px; height: 35px; margin-right: 10px; } .channel-item span { font-size: 14px; } }
     </style>
-    
-    <script>
-        document.addEventListener('contextmenu', event => event.preventDefault());
-        document.onkeydown = function(e) {
-            if (e.keyCode == 123) return false; // F12
-            if (e.ctrlKey && e.shiftKey && e.keyCode == 73) return false; // Ctrl+Shift+I
-            if (e.ctrlKey && e.shiftKey && e.keyCode == 67) return false; // Ctrl+Shift+C
-            if (e.ctrlKey && e.shiftKey && e.keyCode == 74) return false; // Ctrl+Shift+J
-            if (e.ctrlKey && e.keyCode == 85) return false; // Ctrl+U (View Source)
-        };
-    </script>
 </head>
 <body>
     <div class="container">
         <div class="content-wrapper">
             <div id="player-container">
-                <video id="live-tv-player" controls preload="auto" controlsList="nodownload">
+                <video id="live-tv-player" controls preload="auto" controlslist="nodownload">
                     Your browser does not support the video tag.
                 </video>
             </div>
@@ -64,19 +53,36 @@
     </div>
 
     <script>
-        // Simple Base64 decoding helper function to read protected data variables safely at runtime
-        function _0xdecode(str) { return atob(str); }
+        // Anti-inspection / Protection Layer
+        (function() {
+            document.addEventListener('contextmenu', e => e.preventDefault());
+            document.addEventListener('keydown', e => {
+                if (
+                    e.key === 'F12' ||
+                    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+                    (e.ctrlKey && e.key === 'u')
+                ) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        })();
 
         let player = document.getElementById('live-tv-player');
         let currentHls = null;
-        const DEFAULT_LOGO = _0xdecode('aHR0cHM6Ly9pbWFnZXMudW5zcGxhc2guY29tL3Bob3RvLTE1OTU2MjQ4NzE5MzAtNmU4NTM3OTk4NTkyP3c9MTAwJmF1dG89Zm9ybWF0JmZpdD1jcm9wJnE9NjA=');
-
+        const DEFAULT_LOGO = 'https://images.unsplash.com/photo-1595624871930-6e8537998592?w=100&auto=format&fit=crop&q=60';
         let allChannels = [];
 
-        // ENCODED PLAYLIST URLS (Protected using Base64 strings):
+        // Encoded Assets Array
+        const _0x4f2a = [
+            "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0ZhaGFka2hhbjQxMC9iZHRlc3QvcmVmcy9oZWFkcy9tYWluL2NoYS5tM3U=",
+            "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2FidXNhZWVpZHgvQkR4VFYvcmVmcy9oZWFkcy9tYWluL2NoYW5uZWxzX3BsMi5tM3U=",
+            "aHR0cHM6Ly9hcGkuYWxsb3JpZ2lucy53aW4vcmF3P3VybD0="
+        ];
+
         const PLAYLIST_URLS = [
-            _0xdecode('aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0ZhaGFka2hhbjQxMC9iZHRlc3QvcmVmcy9oZWFkcy9tYWluL2NoYS5tM3U='),
-            _0xdecode('aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3NtLW1vbmlydWxpc2xhbS9Sb2FyWm9uZS1BdXRvLVVwZGF0ZS1wbGF5bGlzdC9yZWZzL2hlYWRzL21haW4vUm9hclpvbmUubTN1')
+            atob(_0x4f2a[0]),
+            atob(_0x4f2a[1])
         ];
 
         window.onload = () => {
@@ -113,9 +119,8 @@
                 currentHls = null;
             }
 
-            // Secure validation block handling mixed HTTP/HTTPS protocol layers smoothly
-            if (window.location.protocol === _0xdecode('aHR0cHM6Og==') && url.startsWith(_0xdecode('aHR0cDovLw=='))) {
-                url = _0xdecode('aHR0cHM6Ly9hcGkuYWxsb3JpZ2lucy53aW4vcmF3P3VybD0=') + encodeURIComponent(url);
+            if (window.location.protocol === 'https:' && url.startsWith('http://')) {
+                url = atob(_0x4f2a[2]) + encodeURIComponent(url);
             }
 
             if (Hls.isSupported()) {
@@ -141,7 +146,7 @@
                         }
                     }
                 });
-            } else if (player.canPlayType(_0xdecode('YXBwbGljYXRpb24vdm5kLmFwcGxlLm1wZWd1cmw='))) {
+            } else if (player.canPlayType('application/vnd.apple.mpegurl')) {
                 player.src = url;
                 player.addEventListener('loadedmetadata', function() {
                     player.play().catch(error => {});
@@ -155,23 +160,29 @@
                 if (!response.ok) throw new Error();
                 
                 const playlistText = await response.text();
-                const lines = playlistText.split('\n');
+                const lines = playlistText.split('\n').map(line => line.replace('\r', '').trim());
                 const channels = [];
 
                 for (let i = 0; i < lines.length; i++) {
-                    let currentLine = lines[i].trim();
-                    if (currentLine.startsWith(_0xdecode('I0VYVElORg=='))) {
+                    let currentLine = lines[i];
+                    if (currentLine.startsWith('#EXTINF')) {
                         const infoParts = currentLine.split(',');
-                        const name = infoParts.length > 1 ? infoParts[1].trim() : _0xdecode('VW5rbm93biBDaGFubmVs');
+                        const name = infoParts.length > 1 ? infoParts[1].trim() : 'Unknown Channel';
                         
                         const logoMatch = currentLine.match(/tvg-logo="(.*?)"/);
                         const logo = logoMatch ? logoMatch[1].trim() : '';
                         
                         let streamUrl = '';
                         for (let j = i + 1; j < lines.length; j++) {
-                            let nextLine = lines[j].trim();
-                            if (nextLine.startsWith('#') || nextLine.length === 0) continue;
-                            if (nextLine.startsWith(_0xdecode('aHR0cA=='))) {
+                            let nextLine = lines[j];
+                            if (nextLine.length === 0) continue; 
+                            if (nextLine.startsWith('#')) {
+                                if (nextLine.startsWith('#EXTINF')) {
+                                    break; 
+                                }
+                                continue;
+                            }
+                            if (nextLine.startsWith('http')) {
                                 streamUrl = nextLine;
                                 i = j; 
                                 break;
@@ -207,7 +218,7 @@
             channelList.innerHTML = '';
             
             if (channels.length === 0) {
-                channelList.innerHTML = _0xdecode('PGRpdiBzdHlsZT0icGFkZGluZzogMjBweDsgdGV4dC1hbGlnbjogY2VudGVyOyBjb2xvcjogIzg4ODsiPk5vIGNoYW5uZWxzIGZvdW5kPC9kaXY+');
+                channelList.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No channels found</div>';
                 return;
             }
 
