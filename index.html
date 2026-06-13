@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASFA Live Premium</title>
+    <title>ASFA Live Premium - fMP4 Enhanced</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="https://i.postimg.cc/SRgsPFyg/image.png">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -13,31 +13,24 @@
         .container { height: 100vh; display: flex; flex-direction: column; }
         .content-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Premium Player Container Overhaul */
         #player-container { width: 100%; background: #000; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         #live-tv-player { width: 100%; height: 100%; background: #000; object-fit: contain; }
         
-        /* Custom UI Controls Overlay */
         .player-controls { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.85)); padding: 20px; display: flex; align-items: center; justify-content: space-between; opacity: 0; transition: opacity 0.3s; z-index: 5; }
         #player-container:hover .player-controls { opacity: 1; }
         .control-group { display: flex; align-items: center; gap: 15px; }
         .control-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; transition: color 0.2s; display: flex; align-items: center; }
         .control-btn:hover { color: #ff3333; }
         
-        /* Live Badge & Vol */
         .live-badge { background: #ff0000; color: white; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 5px; }
-        .live-badge::before { content: ''; display: inline-block; width: 6px; height: 6px; background: white; border-radius: 50%; animate: pulse 1s infinite; }
+        .live-badge::before { content: ''; display: inline-block; width: 6px; height: 6px; background: white; border-radius: 50%; animation: pulse 1s infinite; }
         .volume-container { display: flex; align-items: center; gap: 8px; }
         .volume-slider { width: 70px; height: 4px; accent-color: #ff3333; cursor: pointer; }
         
-        /* Loading Spinner */
         .spinner { position: absolute; width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); border-radius: 50%; border-top-color: #ff3333; animation: spin 1s ease-in-out infinite; display: none; z-index: 4; }
-        
-        /* Toast Notification */
         .toast { position: absolute; top: 20px; left: 20px; background: rgba(255, 51, 51, 0.9); padding: 10px 15px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 8px; transform: translateY(-100px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 6; }
         .toast.show { transform: translateY(0); }
 
-        /* Channel Section Layout */
         .channel-section { background-image: url('https://i.postimg.cc/SRgsPFyg/image.png'); background-size: cover; background-position: center; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .search-bar { padding: 10px; background: rgba(0, 0, 0, 0.9); position: sticky; top: 0; z-index: 10; }
         .search-bar input { width: 100%; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; outline: none; background: rgba(255, 255, 255, 0.1); color: #ffffff; font-size: 16px; }
@@ -66,9 +59,7 @@
                 <div class="spinner" id="player-spinner"></div>
                 <div class="toast" id="player-toast"><i class="ri-alert-line"></i> <span id="toast-msg">Error</span></div>
                 
-                <video id="live-tv-player" preload="auto" playsinline>
-                    Your browser does not support HLS streaming.
-                </video>
+                <video id="live-tv-player" preload="auto" playsinline></video>
 
                 <div class="player-controls">
                     <div class="control-group">
@@ -98,7 +89,6 @@
     </div>
 
     <script>
-        // System anti-inspect layer
         (function() {
             document.addEventListener('contextmenu', e => e.preventDefault());
             document.addEventListener('keydown', e => {
@@ -131,7 +121,6 @@
             adjustPlayerHeight();
             document.getElementById('search-input').addEventListener('input', filterChannels);
             
-            // Watch native video elements hook states
             player.addEventListener('waiting', () => spinner.style.display = 'block');
             player.addEventListener('playing', () => {
                 spinner.style.display = 'none';
@@ -154,7 +143,6 @@
             setTimeout(() => toast.classList.remove('show'), 4000);
         }
 
-        /* Video Player Control Implementations */
         function togglePlay() {
             if (player.paused) { player.play().catch(()=>{}); } 
             else { player.pause(); }
@@ -178,14 +166,17 @@
             else { document.exitFullscreen(); }
         }
 
-        /* HLS Streaming Core Engine Hooks */
+        // fMP4 Optimized HLS Config
         const config = {
             maxBufferLength: 30,
             maxMaxBufferLength: 600,
-            manifestLoadingTimeOut: 15000,
+            manifestLoadingTimeOut: 20000,
             manifestLoadingMaxRetry: 6,
             enableWorker: true,
-            lowLatencyMode: true
+            lowLatencyMode: true,
+            // fMP4 Streams often require specific timestamp offsets configurations
+            enableEosHandler: true,
+            forceKeyFrameOnDiscontinuity: true
         };
 
         function playChannel(url, useProxy = false) {
@@ -230,7 +221,6 @@
             }
         }
 
-        /* Playlist Parsing and Rendering Modules */
         async function fetchPlaylist(url) {
             try {
                 let response = await fetch(url);
@@ -238,7 +228,10 @@
                 if (!response.ok) throw new Error();
                 
                 const playlistText = await response.text();
-                if (!playlistText.includes('#EXTM3U') && (url.includes('.m3u8') || url.startsWith('http'))) {
+                
+                // Enhanced Regular Expression to catch regular, query parameters, and fMP4 HLS manifests natively
+                const cleanUrl = url.split('?')[0];
+                if (!playlistText.includes('#EXTM3U') && (cleanUrl.includes('.m3u8') || cleanUrl.includes('.fmp4') || url.startsWith('http'))) {
                     return [{ name: 'DIRECT CHANNEL', url: url, logo: DEFAULT_LOGO }];
                 }
 
