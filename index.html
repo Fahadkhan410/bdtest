@@ -73,16 +73,18 @@
         const DEFAULT_LOGO = 'https://images.unsplash.com/photo-1595624871930-6e8537998592?w=100&auto=format&fit=crop&q=60';
         let allChannels = [];
 
-        // Encoded Assets Array
+        // Encoded Assets Array (Base64)
         const _0x4f2a = [
             "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0ZhaGFka2hhbjQxMC9iZHRlc3QvcmVmcy9oZWFkcy9tYWluL2NoYS5tM3U=",
             "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2FidXNhZWVpZHgvQkR4VFYvcmVmcy9oZWFkcy9tYWluL2NoYW5uZWxzX3BsMi5tM3U=",
             "aHR0cHM6Ly9hcGkuYWxsb3JpZ2lucy53aW4vcmF3P3VybD0="
         ];
 
+        // This array supports BOTH standard M3U file links AND raw direct stream links (like .m3u8 / .mp4 / .ts)
         const PLAYLIST_URLS = [
             atob(_0x4f2a[0]),
             atob(_0x4f2a[1])
+            // Example: You can safely drop any raw direct link here, like: "https://example.com/live/stream.m3u8"
         ];
 
         window.onload = () => {
@@ -160,7 +162,21 @@
                 if (!response.ok) throw new Error();
                 
                 const playlistText = await response.text();
-                // Normalize lines and trim out dirty carriage return bytes (\r)
+                
+                // Direct Streaming Link Interceptor Module
+                // If it doesn't start with M3U syntax headers but is an active live stream link, handle as a direct source item
+                if (!playlistText.includes('#EXTM3U') && (url.toLowerCase().includes('.m3u8') || url.toLowerCase().includes('.mp4') || url.toLowerCase().includes('.ts') || url.toLowerCase().includes('/stream') || url.startsWith('http'))) {
+                    let FallbackTitle = 'Direct Stream';
+                    try {
+                        let segments = url.split('/');
+                        let fileSegment = segments[segments.length - 1].split('?')[0];
+                        if (fileSegment.length > 3) {
+                            FallbackTitle = fileSegment.replace('.m3u8', '').replace('.mp4', '').replace('.ts', '').toUpperCase();
+                        }
+                    } catch(err) {}
+                    return [{ name: FallbackTitle, url: url, logo: DEFAULT_LOGO }];
+                }
+
                 const lines = playlistText.split('\n').map(line => line.replace('\r', '').trim());
                 const channels = [];
 
@@ -168,11 +184,9 @@
                     let currentLine = lines[i];
                     
                     if (currentLine.startsWith('#EXTINF')) {
-                        // Universal Attribute Matchers via Regular Expressions
                         const logoMatch = currentLine.match(/tvg-logo="([^"]*)"/) || currentLine.match(/logo="([^"]*)"/);
                         const tvgNameMatch = currentLine.match(/tvg-name="([^"]*)"/);
                         
-                        // Universal Channel Name Extraction Strategy
                         let name = 'Unknown Channel';
                         const commaIndex = currentLine.lastIndexOf(',');
                         
@@ -185,25 +199,19 @@
                         const logo = logoMatch ? logoMatch[1].trim() : '';
                         let streamUrl = '';
                         
-                        // Resilient forward loop looking for the streaming URL asset block
                         for (let j = i + 1; j < lines.length; j++) {
                             let nextLine = lines[j];
                             if (nextLine.length === 0) continue; 
                             
-                            // If we intercept an informational entry before finding a valid link, drop entry window
                             if (nextLine.startsWith('#EXTINF')) {
                                 break; 
                             }
-                            
-                            // Skip secondary track headers or internal option hashes completely
                             if (nextLine.startsWith('#')) {
                                 continue;
                             }
-                            
-                            // Route target URL string matches seamlessly
                             if (nextLine.startsWith('http://') || nextLine.startsWith('https://') || nextLine.startsWith('http')) {
                                 streamUrl = nextLine;
-                                i = j; // Catch index alignment window up to avoid duplicated parse processes
+                                i = j; 
                                 break;
                             }
                         }
@@ -215,6 +223,10 @@
                 }
                 return channels;
             } catch (error) {
+                // Last ditch local recovery fallback: If structural file fetching broke but asset itself looks like a direct link, map it directly
+                if (url.startsWith('http://') || url.startsWith('https://')) {
+                     return [{ name: 'External Link Stream', url: url, logo: DEFAULT_LOGO }];
+                }
                 return [];
             }
         }
