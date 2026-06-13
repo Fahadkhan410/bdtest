@@ -2,289 +2,107 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASFA Live</title>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <link rel="icon" type="image/png" href="https://i.postimg.cc/SRgsPFyg/image.png">
+    <title>ASFA Secure Live</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #000000; color: #fff; min-height: 100vh; overflow: hidden; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
-        .container { height: 100vh; display: flex; flex-direction: column; }
-        .content-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        #player-container { width: 100%; background: #000; position: relative; }
-        #live-tv-player { width: 100%; height: 100%; background: #000; object-fit: contain; }
-        .channel-section { background-image: url('https://i.postimg.cc/SRgsPFyg/image.png'); background-size: cover; background-position: center; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .search-bar { padding: 10px; background: rgba(0, 0, 0, 0.9); position: sticky; top: 0; z-index: 10; }
-        .search-bar input { width: 100%; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; outline: none; background: rgba(255, 255, 255, 0.1); color: #ffffff; font-size: 16px; }
-        .channel-list { flex: 1; overflow-y: auto; background: rgba(0, 0, 0, 0.8); }
-        .channel-item { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; transition: background 0.2s; }
-        .channel-item:hover { background: rgba(255, 255, 255, 0.1); }
-        .channel-item img { width: 40px; height: 40px; margin-right: 15px; border-radius: 8px; object-fit: cover; }
-        .channel-item span { color: #fff; font-size: 15px; }
-        .footer { padding: 10px; text-align: center; background: rgba(0, 0, 0, 0.9); }
-        .footer a { color: #ffffff; text-decoration: none; font-size: 14px; }
-        .channel-list::-webkit-scrollbar { width: 6px; }
-        .channel-list::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
-        .channel-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
-        @media (min-width: 768px) { .content-wrapper { flex-direction: row; } #player-container { flex: 0 0 70%; height: 100vh; } .channel-section { width: 30%; min-width: 30%; } }
-        @media (max-width: 767px) { body { overflow: auto; } .container { height: auto; } #player-container { height: 35vh; } .channel-section { height: 65vh; } .channel-list { max-height: calc(65vh - 110px); } }
-        @media (max-width: 480px) { .channel-item { padding: 10px; } .channel-item img { width: 35px; height: 35px; margin-right: 10px; } .channel-item span { font-size: 14px; } }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; user-select: none; }
+        .container { display: flex; height: 100vh; }
+        #player-wrapper { flex: 1; background: #000; position: relative; }
+        #live-tv-player { width: 100%; height: 100%; object-fit: contain; }
+        .sidebar { width: 320px; background: rgba(0,0,0,0.9); border-left: 1px solid #333; display: flex; flex-direction: column; }
+        .channel-list { flex: 1; overflow-y: auto; }
+        .channel-item { padding: 12px; border-bottom: 1px solid #222; cursor: pointer; transition: 0.2s; }
+        .channel-item:hover { background: #333; }
+        input { width: calc(100% - 20px); margin: 10px; padding: 10px; background: #111; border: 1px solid #444; color: white; border-radius: 5px; }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <div class="content-wrapper">
-            <div id="player-container">
-                <video id="live-tv-player" controls preload="auto" controlslist="nodownload">
-                    Your browser does not support the video tag.
-                </video>
-            </div>
-            <div class="channel-section">
-                <div class="search-bar">
-                    <input type="text" id="search-input" placeholder="Search channels...">
-                </div>
-                <div class="channel-list" id="channel-list"></div>
-                <div class="footer">
-                    <a href="updates.html" target="_blank">for more updates</a>
-                </div>
-            </div>
+        <div id="player-wrapper">
+            <video id="live-tv-player" controls preload="auto" crossorigin="anonymous"></video>
+        </div>
+        <div class="sidebar">
+            <input type="text" id="search" placeholder="Search channels...">
+            <div class="channel-list" id="channel-list"></div>
         </div>
     </div>
 
     <script>
-        // Anti-inspection Layer
+        // --- Anti-Inspection Layer ---
         (function() {
             document.addEventListener('contextmenu', e => e.preventDefault());
             document.addEventListener('keydown', e => {
-                if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || (e.ctrlKey && e.key === 'u')) {
-                    e.preventDefault();
-                    return false;
+                if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'u')) {
+                    e.preventDefault(); return false;
                 }
             });
         })();
 
-        let player = document.getElementById('live-tv-player');
-        let currentHls = null;
-        const DEFAULT_LOGO = 'https://images.unsplash.com/photo-1595624871930-6e8537998592?w=100&auto=format&fit=crop&q=60';
-        let allChannels = [];
-
-        // Base64 Obfuscated Core Strings (Playlists & Fallback CORS Proxies)
-        const _0x4f2a = [
+        // --- Obfuscated Config ---
+        const _0xData = [
             "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0ZhaGFka2hhbjQxMC9iZHRlc3QvcmVmcy9oZWFkcy9tYWluL2NoYS5tM3U=",
             "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2FidXNhZWVpZHgvQkR4VFYvcmVmcy9oZWFkcy9tYWluL2NoYW5uZWxzX3BsMi5tM3U=",
-            "aHR0cHM6Ly9hcGkuYWxsb3JpZ2lucy53aW4vcmF3P3VybD0=" // Proxy 1
+            "aHR0cHM6Ly9hcGkuYWxsb3JpZ2lucy53aW4vcmF3P3VybD0="
         ];
 
-        // Supports M3U files, M3U8 files, and Raw Direct Stream URLs mixed together
-        const PLAYLIST_URLS = [
-            atob(_0x4f2a[0]),
-            atob(_0x4f2a[1])
-        ];
-
-        window.onload = () => {
-            loadAllPlaylists();
-            adjustPlayerHeight();
-            document.getElementById('search-input').addEventListener('input', filterChannels);
-        };
-
-        window.onresize = adjustPlayerHeight;
-
-        function adjustPlayerHeight() {
-            if (window.innerWidth >= 768) {
-                player.style.height = '100vh';
-            } else {
-                player.style.height = '35vh';
-            }
-        }
-
-        const config = {
-            maxBufferLength: 30,
-            maxMaxBufferLength: 600,
-            manifestLoadingTimeOut: 15000,
-            manifestLoadingMaxRetry: 6,
-            levelLoadingTimeOut: 15000,
-            levelLoadingMaxRetry: 6,
-            enableWorker: true,
-            lowLatencyMode: true,
-            xhrSetup: function (xhr, url) {
-                xhr.withCredentials = false;
-            }
-        };
-
-        function playChannel(url, useProxy = false) {
-            if (currentHls) {
-                currentHls.destroy();
-                currentHls = null;
-            }
-
-            // Fix HTTP Block / Mixed Content Issues automatically
-            if ((window.location.protocol === 'https:' && url.startsWith('http://')) || useProxy) {
-                console.log("Routing stream through secure proxy resolver...");
-                url = atob(_0x4f2a[2]) + encodeURIComponent(url);
-            }
-
-            if (Hls.isSupported()) {
-                currentHls = new Hls(config);
-                currentHls.loadSource(url);
-                currentHls.attachMedia(player);
-                currentHls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    player.play().catch(() => {});
-                });
-                
-                currentHls.on(Hls.Events.ERROR, function(event, data) {
-                    if (data.fatal) {
-                        switch(data.type) {
-                            case Hls.ErrorTypes.NETWORK_ERROR:
-                                // If the stream fails due to a network or CORS restriction, retry one time using the Secure Proxy
-                                if (!useProxy) {
-                                    console.log("Network error detected. Attempting proxy backup line...");
-                                    playChannel(data.url || url, true);
-                                } else {
-                                    currentHls.startLoad();
-                                }
-                                break;
-                            case Hls.ErrorTypes.MEDIA_ERROR:
-                                currentHls.recoverMediaError();
-                                break;
-                            default:
-                                currentHls.destroy();
-                                break;
-                        }
-                    }
-                });
-            } else if (player.canPlayType('application/vnd.apple.mpegurl')) {
-                // Native Safari fallback
-                player.src = url;
-                player.addEventListener('loadedmetadata', function() {
-                    player.play().catch(() => {});
-                });
-            }
-        }
+        const video = document.getElementById('live-tv-player');
+        let hls = null;
 
         async function fetchPlaylist(url) {
             try {
+                // Try direct, fallback to proxy
                 let response = await fetch(url);
-                if (!response.ok) {
-                    // CORS Bypass for strict hosting providers
-                    response = await fetch(atob(_0x4f2a[2]) + encodeURIComponent(url));
-                }
-                if (!response.ok) throw new Error();
+                if (!response.ok) response = await fetch(atob(_0xData[2]) + encodeURIComponent(url));
                 
-                const playlistText = await response.text();
+                const text = await response.text();
+                const lines = text.split('\n');
+                let channels = [];
                 
-                // Direct Link Interceptor Module
-                if (!playlistText.includes('#EXTM3U') && (url.includes('.m3u8') || url.includes('.mp4') || url.includes('.ts') || url.startsWith('http'))) {
-                    let fallbackTitle = 'DIRECT CHANNEL';
-                    try {
-                        let parts = url.split('/');
-                        let file = parts[parts.length - 1].split('?')[0];
-                        if (file.length > 4) fallbackTitle = file.replace('.m3u8','').replace('.mp4','').toUpperCase();
-                    } catch(e){}
-                    return [{ name: fallbackTitle, url: url, logo: DEFAULT_LOGO }];
-                }
-
-                const lines = playlistText.split('\n').map(line => line.replace('\r', '').trim());
-                const channels = [];
-
-                for (let i = 0; i < lines.length; i++) {
-                    let currentLine = lines[i];
-                    
-                    if (currentLine.startsWith('#EXTINF')) {
-                        const logoMatch = currentLine.match(/tvg-logo="([^"]*)"/) || currentLine.match(/logo="([^"]*)"/);
-                        const tvgNameMatch = currentLine.match(/tvg-name="([^"]*)"/);
-                        
-                        let name = 'Live Channel Stream';
-                        const commaIndex = currentLine.lastIndexOf(',');
-                        
-                        if (commaIndex !== -1 && commaIndex < currentLine.length - 1) {
-                            name = currentLine.substring(commaIndex + 1).trim();
-                        } else if (tvgNameMatch) {
-                            name = tvgNameMatch[1].trim();
-                        }
-                        
-                        const logo = logoMatch ? logoMatch[1].trim() : '';
-                        let streamUrl = '';
-                        
-                        for (let j = i + 1; j < lines.length; j++) {
-                            let nextLine = lines[j];
-                            if (nextLine.length === 0) continue; 
-                            if (nextLine.startsWith('#EXTINF')) break; 
-                            
-                            // Bypass metadata or user-agent tags (e.g., #EXTVLCOPT)
-                            if (nextLine.startsWith('#')) continue;
-                            
-                            if (nextLine.startsWith('http://') || nextLine.startsWith('https://') || nextLine.startsWith('http')) {
-                                streamUrl = nextLine;
-                                i = j; 
-                                break;
-                            }
-                        }
-
-                        if (streamUrl) {
-                            channels.push({ name, url: streamUrl, logo });
-                        }
+                lines.forEach((line, i) => {
+                    if (line.startsWith('#EXTINF:')) {
+                        channels.push({
+                            name: line.split(',')[1] || 'Channel',
+                            url: lines[i + 1] ? lines[i + 1].trim() : ''
+                        });
                     }
-                }
+                });
                 return channels;
-            } catch (error) {
-                // If it's a raw stream URL link that completely failed to parse as text, wrap it directly
-                if (url.startsWith('http')) {
-                    return [{ name: 'Direct Stream Line', url: url, logo: DEFAULT_LOGO }];
-                }
-                return [];
-            }
+            } catch (e) { return []; }
         }
 
-        async function loadAllPlaylists() {
-            let combinedChannels = [];
-            const requests = PLAYLIST_URLS.map(url => fetchPlaylist(url));
-            const results = await Promise.all(requests);
-            
-            results.forEach(channelsArray => {
-                combinedChannels = combinedChannels.concat(channelsArray);
+        async function init() {
+            let all = [];
+            for(let b64 of [_0xData[0], _0xData[1]]) {
+                all = [...all, ...await fetchPlaylist(atob(b64))];
+            }
+            render(all);
+        }
+
+        function render(channels) {
+            const list = document.getElementById('channel-list');
+            list.innerHTML = channels.map(c => `
+                <div class="channel-item" onclick="play('${c.url}')">${c.name}</div>
+            `).join('');
+        }
+
+        function play(url) {
+            if (hls) hls.destroy();
+            hls = new Hls();
+            hls.loadSource(url);
+            hls.attachMedia(video);
+            video.play().catch(() => {});
+        }
+
+        document.getElementById('search').addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            document.querySelectorAll('.channel-item').forEach(el => {
+                el.style.display = el.innerText.toLowerCase().includes(val) ? 'block' : 'none';
             });
+        });
 
-            allChannels = combinedChannels;
-            renderChannels(allChannels, true);
-        }
-
-        function renderChannels(channels, isInitialLoad = false) {
-            const channelList = document.getElementById('channel-list');
-            channelList.innerHTML = '';
-            
-            if (channels.length === 0) {
-                channelList.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No channels found</div>';
-                return;
-            }
-
-            channels.forEach((channel, index) => {
-                const item = document.createElement('div');
-                item.className = 'channel-item';
-                item.innerHTML = `
-                    <img src="${channel.logo || DEFAULT_LOGO}" alt="${channel.name}" onerror="this.src='${DEFAULT_LOGO}'">
-                    <span>${channel.name}</span>
-                `;
-                item.onclick = () => playChannel(channel.url);
-                channelList.appendChild(item);
-
-                if (index === 0 && isInitialLoad) {
-                    playChannel(channel.url);
-                }
-            });
-        }
-
-        function filterChannels() {
-            const searchInput = document.getElementById('search-input').value.toLowerCase().trim();
-            if (searchInput === '') {
-                renderChannels(allChannels, false);
-                return;
-            }
-            const filtered = allChannels.filter(channel => 
-                channel.name.toLowerCase().includes(searchInput)
-            );
-            renderChannels(filtered, false);
-        }
+        init();
     </script>
 </body>
 </html>
