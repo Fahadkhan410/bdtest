@@ -1,6 +1,6 @@
 /**
  * Cloudflare Worker: M3U Playlist Generator
- * URL: https://asfaflix.arifmeghla410.workers.dev/asfaflix/index.js
+ * URL: index.js
  */
 
 // 1. Database of your channels for easy maintenance
