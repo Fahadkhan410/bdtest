@@ -1,7 +1,9 @@
 #EXTM3U
 #EXTINF:-1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", Australia Tour of Bangladesh 2026
 https://premierleagpl23.akamaized.net/hls/live/2107108/Tapmad-P2s6L_EnG-FiN@L/master.m3u8
-#EXTINF:-1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", FIFA 26
+#EXTINF:-1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", FIFA 26-Bio
+https://streamsportixa.ajmainearafat.workers.dev/live.m3u8
+#EXTINF:-1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", FIFA 26-TapMad
 https://premierleagpl23.akamaized.net/hls/live/2107108/tapmad-P2s6L_FiN@L-UrU/master.m3u8
 #EXTINF:-1 tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", Somoy TV
 https://live.thebosstv.com:30443/dwlive/Somoy-TV/playlist.m3u8
