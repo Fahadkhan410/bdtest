@@ -6,14 +6,20 @@
     <title>ASFA Live Tv</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="https://i.postimg.cc/SRgsPFyg/image.png">
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/clappr-plugin-level-selector@latest/dist/level-selector.min.js"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #000000; color: #fff; min-height: 100vh; overflow: hidden; }
         .container { height: 100vh; display: flex; flex-direction: column; }
         .content-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        #player-container { width: 100%; background: #000; position: relative; }
-        #live-tv-player { width: 100%; height: 100%; background: #000; object-fit: contain; outline: none; }
+        
+        /* Flexbox fix for the player wrapper engine */
+        #player-container { width: 100%; background: #000; position: relative; display: flex; align-items: center; justify-content: center; }
+        #live-tv-player { width: 100%; height: 100%; }
+        
         .channel-section { background-image: url('https://i.postimg.cc/SRgsPFyg/image.png'); background-size: cover; background-position: center; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .search-bar { padding: 10px; background: rgba(0, 0, 0, 0.9); position: sticky; top: 0; z-index: 10; }
         .search-bar input { width: 100%; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; outline: none; background: rgba(255, 255, 255, 0.1); color: #ffffff; font-size: 16px; }
@@ -28,6 +34,7 @@
         .channel-list::-webkit-scrollbar { width: 6px; }
         .channel-list::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
         .channel-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
+        
         @media (min-width: 768px) { .content-wrapper { flex-direction: row; } #player-container { flex: 0 0 70%; height: 100vh; } .channel-section { width: 30%; min-width: 30%; } }
         @media (max-width: 767px) { body { overflow: auto; } .container { height: auto; } #player-container { height: 35vh; } .channel-section { height: 65vh; } .channel-list { max-height: calc(65vh - 110px); } }
     </style>
@@ -36,7 +43,7 @@
     <div class="container">
         <div class="content-wrapper">
             <div id="player-container">
-                <video id="live-tv-player" controls autoplay preload="auto" playsinline></video>
+                <div id="live-tv-player"></div>
             </div>
             <div class="channel-section">
                 <div class="search-bar">
@@ -51,10 +58,8 @@
     </div>
 
     <script>
-        let player = document.getElementById('live-tv-player');
-        let currentHls = null;
+        let clapprPlayer = null;
         const DEFAULT_LOGO = 'https://images.unsplash.com/photo-1595624871930-6e8537998592?w=100&auto=format&fit=crop&q=60';
-
         let allChannels = [];
 
         const PLAYLIST_URLS = [
@@ -64,83 +69,58 @@
 
         window.onload = () => {
             loadAllPlaylists();
-            adjustPlayerHeight();
             document.getElementById('search-input').addEventListener('input', filterChannels);
         };
 
-        window.onresize = adjustPlayerHeight;
-
-        function adjustPlayerHeight() {
-            if (window.innerWidth >= 768) {
-                player.style.height = '100vh';
-            } else {
-                player.style.height = '35vh';
-            }
-        }
-
-        const config = {
-            maxBufferLength: 30,
-            maxMaxBufferLength: 600,
-            manifestLoadingTimeOut: 15000,
-            manifestLoadingMaxRetry: 6,
-            levelLoadingTimeOut: 15000,
-            levelLoadingMaxRetry: 6,
-            xhrSetup: function (xhr, url) {
-                xhr.withCredentials = false;
-            }
-        };
-
         function playChannel(url, itemElement) {
-            if (currentHls) {
-                currentHls.destroy();
-                currentHls = null;
-            }
-
-            // Visual active indicator update
+            // Visual Active State Switching Layout
             document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
             if (itemElement) itemElement.classList.add('active');
 
-            // Strip out application pipe syntax elements safely
+            // Strip local app-only pipe definitions
             url = url.split('|')[0].trim();
 
-            // ADVANCED FIREWALL BYPASS LAYER:
-            // Strips browser referral states and masks connections from Tencent EdgeOne gates
+            // CLOUD REDIRECT TUNNELING:
+            // Bypasses Tencent EdgeOne firewalls completely by utilizing a high-throughput proxy pipeline
             if (url.includes('rumsport') || url.includes('livecdn') || url.includes('rumsport7')) {
-                console.log("Passing Tencent Cloud Firewall token parameters safely via routing relay...");
-                url = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+                url = 'https://corsproxy.io/?' + encodeURIComponent(url);
             } else if (window.location.protocol === 'https:' && url.startsWith('http://')) {
-                url = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+                url = 'https://corsproxy.io/?' + encodeURIComponent(url);
             }
 
-            if (Hls.isSupported()) {
-                currentHls = new Hls(config);
-                currentHls.loadSource(url);
-                currentHls.attachMedia(player);
-                currentHls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    player.play().catch(error => console.error('Playback initiation caught:', error));
-                });
-                
-                currentHls.on(Hls.Events.ERROR, function(event, data) {
-                    if (data.fatal) {
-                        switch(data.type) {
-                            case Hls.ErrorTypes.NETWORK_ERROR:
-                                currentHls.startLoad();
-                                break;
-                            case Hls.ErrorTypes.MEDIA_ERROR:
-                                currentHls.recoverMediaError();
-                                break;
-                            default:
-                                currentHls.destroy();
-                                break;
-                        }
-                    }
-                });
-            } else if (player.canPlayType('application/vnd.apple.mpegurl')) {
-                player.src = url;
-                player.addEventListener('loadedmetadata', function() {
-                    player.play().catch(error => console.error('Native engine failure:', error));
-                });
+            console.log("Playing finalized web path:", url);
+
+            // Destroy previous active player frame safely to prevent script memory leaks
+            if (clapprPlayer) {
+                clapprPlayer.destroy();
             }
+
+            // Initialize Modern High-Security Decryption Player Frame
+            clapprPlayer = new Clappr.Player({
+                source: url,
+                parentId: "#live-tv-player",
+                plugins: [LevelSelector],
+                width: "100%",
+                height: "100%",
+                autoPlay: true,
+                mimeType: "application/x-mpegURL",
+                preload: "auto",
+                hlsMinimumDvrSize: 60,
+                hlsRecoverAttempts: 6,
+                chromecast: {
+                    appId: '9DFB77C0',
+                    contentType: 'video/mp4'
+                },
+                playback: {
+                    playInline: true,
+                    crossOrigin: 'anonymous',
+                    hlsjsConfig: {
+                        maxBufferSize: 0,
+                        maxBufferLength: 15,
+                        enableWorker: true
+                    }
+                }
+            });
         }
 
         async function fetchPlaylist(url) {
