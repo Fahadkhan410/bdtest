@@ -61,10 +61,10 @@
         const DEFAULT_LOGO = 'https://images.unsplash.com/photo-1595624871930-6e8537998592?w=100&auto=format&fit=crop&q=60';
         let allChannels = [];
 
-        // Dynamic time token appended here blocks old browser file caching loops entirely
+        // Raw URLs without dynamic components for clean proxy processing
         const PLAYLIST_URLS = [
-            'https://raw.githubusercontent.com/Fahadkhan410/testtt/refs/heads/main/live_sports.m3u?t=' + Date.now(),
-            'https://raw.githubusercontent.com/Fahadkhan410/bdtest/refs/heads/main/cha.m3u?t=' + Date.now()
+            'https://raw.githubusercontent.com/Fahadkhan410/testtt/refs/heads/main/live_sports.m3u',
+            'https://raw.githubusercontent.com/Fahadkhan410/bdtest/refs/heads/main/cha.m3u'
         ];
 
         window.onload = () => {
@@ -78,10 +78,7 @@
 
             url = url.split('|')[0].trim();
 
-            // Firewall Redirect Wrapper Rule
-            if (url.includes('rumsport') || url.includes('livecdn') || url.includes('rumsport7')) {
-                url = 'https://corsproxy.io/?' + encodeURIComponent(url);
-            } else if (window.location.protocol === 'https:' && url.startsWith('http://')) {
+            if (url.includes('rumsport') || url.includes('livecdn') || url.includes('rumsport7') || url.startsWith('http://')) {
                 url = 'https://corsproxy.io/?' + encodeURIComponent(url);
             }
 
@@ -120,7 +117,9 @@
 
         async function fetchPlaylist(url) {
             try {
-                const response = await fetch(url);
+                // FIXED: Adding cache busting and proxy wrapping directly onto playlist fetching
+                const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url + '?t=' + Date.now());
+                const response = await fetch(proxyUrl);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 
                 const playlistText = await response.text();
