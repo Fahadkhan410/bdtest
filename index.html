@@ -6,14 +6,16 @@
     <title>ASFA Live Tv</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="https://i.postimg.cc/SRgsPFyg/image.png">
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #000000; color: #fff; min-height: 100vh; overflow: hidden; }
         .container { height: 100vh; display: flex; flex-direction: column; }
         .content-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         #player-container { width: 100%; background: #000; position: relative; }
-        #live-tv-player { width: 100%; height: 100%; background: #000; object-fit: contain; }
+        
+        /* Updated for web iframe scaling */
+        #live-tv-player { width: 100%; height: 100%; border: none; background: #000; }
+        
         .channel-section { background-image: url('https://i.postimg.cc/SRgsPFyg/image.png'); background-size: cover; background-position: center; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .search-bar { padding: 10px; background: rgba(0, 0, 0, 0.9); position: sticky; top: 0; z-index: 10; }
         .search-bar input { width: 100%; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; outline: none; background: rgba(255, 255, 255, 0.1); color: #ffffff; font-size: 16px; }
@@ -29,16 +31,17 @@
         .channel-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
         @media (min-width: 768px) { .content-wrapper { flex-direction: row; } #player-container { flex: 0 0 70%; height: 100vh; } .channel-section { width: 30%; min-width: 30%; } }
         @media (max-width: 767px) { body { overflow: auto; } .container { height: auto; } #player-container { height: 35vh; } .channel-section { height: 65vh; } .channel-list { max-height: calc(65vh - 110px); } }
-        @media (max-width: 480px) { .channel-item { padding: 10px; } .channel-item img { width: 35px; height: 35px; margin-right: 10px; } .channel-item span { font-size: 14px; } }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="content-wrapper">
             <div id="player-container">
-                <video id="live-tv-player" controls preload="auto">
-                    Your browser does not support the video tag.
-                </video>
+                <iframe id="live-tv-player" 
+                        allowfullscreen="true" 
+                        scrolling="no" 
+                        allow="encrypted-media; autoplay">
+                </iframe>
             </div>
             <div class="channel-section">
                 <div class="search-bar">
@@ -54,7 +57,6 @@
 
     <script>
         let player = document.getElementById('live-tv-player');
-        let currentHls = null;
         const DEFAULT_LOGO = 'https://images.unsplash.com/photo-1595624871930-6e8537998592?w=100&auto=format&fit=crop&q=60';
 
         let allChannels = [];
@@ -80,69 +82,10 @@
             }
         }
 
-        const config = {
-            maxBufferLength: 30,
-            maxMaxBufferLength: 600,
-            manifestLoadingTimeOut: 10000,
-            manifestLoadingMaxRetry: 5,
-            levelLoadingTimeOut: 10000,
-            levelLoadingMaxRetry: 5,
-            xhrSetup: function (xhr, url) {
-                xhr.withCredentials = false;
-            }
-        };
-
+        // Updated function to change the iframe source location
         function playChannel(url) {
-            if (currentHls) {
-                currentHls.destroy();
-                currentHls = null;
-            }
-
-            // CLEANUP: Strip off app specific EXTVLCOPT strings if present
-            url = url.split('|')[0].trim();
-
-            // FIXED SECURITY BYPASS FOR WEB BROWSERS:
-            // If the stream is from rumsport, it requires a secure reverse-proxy bridge
-            // to inject the custom referer header and mask the browser origins.
-            if (url.includes('rumsport') || url.includes('livecdn')) {
-                console.log("Protected sports stream detected. Applying web CORS proxy bridge...");
-                url = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-            } 
-            // Standard insecure fallback routing for older HTTP streams
-            else if (window.location.protocol === 'https:' && url.startsWith('http://')) {
-                console.log("HTTPS deployment detected. Routing raw IP stream through secure proxy wrapper...");
-                url = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-            }
-
-            if (Hls.isSupported()) {
-                currentHls = new Hls(config);
-                currentHls.loadSource(url);
-                currentHls.attachMedia(player);
-                currentHls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    player.play().catch(error => console.error('Playback failed:', error));
-                });
-                
-                currentHls.on(Hls.Events.ERROR, function(event, data) {
-                    if (data.fatal) {
-                        switch(data.type) {
-                            case Hls.ErrorTypes.NETWORK_ERROR:
-                                currentHls.startLoad();
-                                break;
-                            case Hls.ErrorTypes.MEDIA_ERROR:
-                                currentHls.recoverMediaError();
-                                break;
-                            default:
-                                currentHls.destroy();
-                                break;
-                        }
-                    }
-                });
-            } else if (player.canPlayType('application/vnd.apple.mpegurl')) {
-                player.src = url;
-                player.addEventListener('loadedmetadata', function() {
-                    player.play().catch(error => console.error('Native playback failed:', error));
-                });
-            }
+            console.log("Loading stream link into embed frame:", url);
+            player.src = url;
         }
 
         async function fetchPlaylist(url) {
@@ -166,10 +109,9 @@
                         let streamUrl = '';
                         for (let j = i + 1; j < lines.length; j++) {
                             let nextLine = lines[j].trim();
-                            if (nextLine.startsWith('#') && !nextLine.startsWith('#EXTVLCOPT')) continue;
+                            if (nextLine.startsWith('#')) continue;
                             if (nextLine.length === 0) continue;
                             
-                            // Capture the streaming URL line
                             if (nextLine.startsWith('http')) {
                                 streamUrl = nextLine;
                                 i = j; 
