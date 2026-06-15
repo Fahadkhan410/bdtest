@@ -59,7 +59,6 @@
 
         let allChannels = [];
 
-        // ADD ALL YOUR M3U PLAYLIST LINKS TO THIS ARRAY:
         const PLAYLIST_URLS = [
             'https://raw.githubusercontent.com/Fahadkhan410/testtt/refs/heads/main/live_sports.m3u',
             'https://raw.githubusercontent.com/Fahadkhan410/bdtest/refs/heads/main/cha.m3u'
@@ -81,7 +80,6 @@
             }
         }
 
-        // Configuration optimized to forward credentials and support token segments
         const config = {
             maxBufferLength: 30,
             maxMaxBufferLength: 600,
@@ -90,7 +88,7 @@
             levelLoadingTimeOut: 10000,
             levelLoadingMaxRetry: 5,
             xhrSetup: function (xhr, url) {
-                xhr.withCredentials = false; // Keeps tokens persistent across sequential ts chunks
+                xhr.withCredentials = false;
             }
         };
 
@@ -100,10 +98,18 @@
                 currentHls = null;
             }
 
-            // Fallback Engine Check: If your portal site is hosted over HTTPS, 
-            // insecure HTTP streams (like http://103.59.176.72) are blocked by default.
-            // This auto-routes raw HTTP streams through an open reverse-proxy wrapper safely.
-            if (window.location.protocol === 'https:' && url.startsWith('http://')) {
+            // CLEANUP: Strip off app specific EXTVLCOPT strings if present
+            url = url.split('|')[0].trim();
+
+            // FIXED SECURITY BYPASS FOR WEB BROWSERS:
+            // If the stream is from rumsport, it requires a secure reverse-proxy bridge
+            // to inject the custom referer header and mask the browser origins.
+            if (url.includes('rumsport') || url.includes('livecdn')) {
+                console.log("Protected sports stream detected. Applying web CORS proxy bridge...");
+                url = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+            } 
+            // Standard insecure fallback routing for older HTTP streams
+            else if (window.location.protocol === 'https:' && url.startsWith('http://')) {
                 console.log("HTTPS deployment detected. Routing raw IP stream through secure proxy wrapper...");
                 url = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
             }
@@ -160,7 +166,10 @@
                         let streamUrl = '';
                         for (let j = i + 1; j < lines.length; j++) {
                             let nextLine = lines[j].trim();
-                            if (nextLine.startsWith('#') || nextLine.length === 0) continue;
+                            if (nextLine.startsWith('#') && !nextLine.startsWith('#EXTVLCOPT')) continue;
+                            if (nextLine.length === 0) continue;
+                            
+                            // Capture the streaming URL line
                             if (nextLine.startsWith('http')) {
                                 streamUrl = nextLine;
                                 i = j; 
