@@ -16,7 +16,6 @@
         .container { height: 100vh; display: flex; flex-direction: column; }
         .content-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Flexbox fix for the player wrapper engine */
         #player-container { width: 100%; background: #000; position: relative; display: flex; align-items: center; justify-content: center; }
         #live-tv-player { width: 100%; height: 100%; }
         
@@ -62,9 +61,10 @@
         const DEFAULT_LOGO = 'https://images.unsplash.com/photo-1595624871930-6e8537998592?w=100&auto=format&fit=crop&q=60';
         let allChannels = [];
 
+        // Dynamic time token appended here blocks old browser file caching loops entirely
         const PLAYLIST_URLS = [
-            'https://raw.githubusercontent.com/Fahadkhan410/testtt/refs/heads/main/live_sports.m3u',
-            'https://raw.githubusercontent.com/Fahadkhan410/bdtest/refs/heads/main/cha.m3u'
+            'https://raw.githubusercontent.com/Fahadkhan410/testtt/refs/heads/main/live_sports.m3u?t=' + Date.now(),
+            'https://raw.githubusercontent.com/Fahadkhan410/bdtest/refs/heads/main/cha.m3u?t=' + Date.now()
         ];
 
         window.onload = () => {
@@ -73,15 +73,12 @@
         };
 
         function playChannel(url, itemElement) {
-            // Visual Active State Switching Layout
             document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
             if (itemElement) itemElement.classList.add('active');
 
-            // Strip local app-only pipe definitions
             url = url.split('|')[0].trim();
 
-            // CLOUD REDIRECT TUNNELING:
-            // Bypasses Tencent EdgeOne firewalls completely by utilizing a high-throughput proxy pipeline
+            // Firewall Redirect Wrapper Rule
             if (url.includes('rumsport') || url.includes('livecdn') || url.includes('rumsport7')) {
                 url = 'https://corsproxy.io/?' + encodeURIComponent(url);
             } else if (window.location.protocol === 'https:' && url.startsWith('http://')) {
@@ -90,12 +87,10 @@
 
             console.log("Playing finalized web path:", url);
 
-            // Destroy previous active player frame safely to prevent script memory leaks
             if (clapprPlayer) {
                 clapprPlayer.destroy();
             }
 
-            // Initialize Modern High-Security Decryption Player Frame
             clapprPlayer = new Clappr.Player({
                 source: url,
                 parentId: "#live-tv-player",
