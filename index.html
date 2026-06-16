@@ -13,12 +13,12 @@
     <style>
         :root {
             --bg-color: #1a1a1a;
-            --sidebar-bg: rgba(34, 34, 34, 0.95);
-            --card-hover: #2a2a2a;
-            --card-active: #333333;
-            --accent-blue: #00bcd4;
+            --sidebar-bg: #262626;
+            --card-hover: #333333;
+            --accent-blue: #0088cc;
+            --accent-active: #1a73e8;
             --text-main: #ffffff;
-            --text-secondary: #aaaaaa;
+            --text-secondary: #999999;
             --border-color: #333333;
         }
 
@@ -32,7 +32,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #000;
+            background-color: var(--bg-color);
             color: var(--text-main);
             display: flex;
             flex-direction: column;
@@ -40,182 +40,260 @@
             overflow: hidden;
         }
 
-        /* --- TOP PLAYLIST NAVIGATION BAR --- */
-        .playlist-filter-section {
+        /* --- TOP PLAYLIST HEADER BAR --- */
+        .top-navbar {
+            background-color: #212121;
+            border-bottom: 2px solid #151515;
             display: flex;
-            background-color: #222;
-            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+            padding: 0 15px;
+            height: 50px;
+            z-index: 100;
+        }
+
+        .playlist-bar {
+            display: flex;
+            gap: 20px;
             overflow-x: auto;
             white-space: nowrap;
-            z-index: 100;
-            height: 50px;
-            align-items: center;
-            padding: 0 10px;
+            width: 100%;
         }
-        .playlist-filter-section::-webkit-scrollbar { display: none; }
+        
+        .playlist-bar::-webkit-scrollbar { display: none; }
 
         .playlist-btn {
             background: none;
             border: none;
             color: var(--text-secondary);
-            padding: 10px 20px;
             font-size: 14px;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
+            padding: 13px 5px;
+            position: relative;
             transition: color 0.2s;
         }
-        .playlist-btn.active, .playlist-btn:hover {
-            color: var(--accent-blue);
+        
+        .playlist-btn:hover {
+            color: var(--text-main);
+        }
+        
+        .playlist-btn.active {
+            color: #00a2ff;
         }
 
-        /* --- MAIN LAYOUT STRUCTURE --- */
+        /* --- CONTAINER WORKSPACE --- */
         .main-layout {
             display: flex;
             flex: 1;
-            position: relative;
             height: calc(100vh - 50px);
+            position: relative;
             overflow: hidden;
         }
 
-        /* SIDEBAR (LEFT CHANNELS LIST) */
+        /* --- LEFT SIDEBAR (CHANNELS LIST) --- */
         .sidebar {
             width: 360px;
             background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--border-color);
+            border-right: 2px solid #1c1c1c;
             display: flex;
             flex-direction: column;
             height: 100%;
-            z-index: 99;
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            z-index: 50;
+            transition: transform 0.3s ease;
         }
 
         .search-box-wrapper {
             padding: 10px;
-            border-bottom: 1px solid var(--border-color);
+            background-color: #1f1f1f;
         }
+
         .search-input {
             width: 100%;
             padding: 8px 12px;
-            background-color: #111;
-            border: 1px solid #444;
+            background-color: #141414;
+            border: 1px solid #333;
             color: var(--text-main);
             border-radius: 4px;
+            font-size: 13px;
             outline: none;
+        }
+
+        .group-filter-section {
+            padding: 8px 10px;
+            background-color: #1f1f1f;
+            border-bottom: 1px solid #141414;
+        }
+
+        .group-filter-bar {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+        .group-filter-bar::-webkit-scrollbar { height: 4px; }
+        .group-filter-bar::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+
+        .group-btn {
+            background-color: #333;
+            color: #ccc;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .group-btn.active {
+            background-color: var(--accent-blue);
+            color: #fff;
         }
 
         .channel-list {
             flex: 1;
             overflow-y: auto;
         }
+        
         .channel-list::-webkit-scrollbar { width: 6px; }
         .channel-list::-webkit-scrollbar-thumb { background: #444; }
 
         .channel-item {
             display: flex;
             align-items: center;
-            padding: 12px 15px;
+            padding: 10px 15px;
             cursor: pointer;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid #1f1f1f;
+            position: relative;
         }
+        
         .channel-item:hover { background-color: var(--card-hover); }
+        
         .channel-item.active { 
-            background-color: var(--card-active);
-            border: 2px solid var(--accent-blue);
+            background-color: #1a233a; 
+            outline: 1px solid #00a2ff;
         }
 
-        .channel-index {
-            font-size: 12px;
+        .channel-number {
+            font-size: 11px;
             color: var(--text-secondary);
             width: 25px;
-        }
-        .channel-logo {
-            width: 35px;
-            height: 35px;
-            object-fit: contain;
-            margin-right: 15px;
-        }
-        .channel-title {
-            font-size: 14px;
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-weight: bold;
         }
 
-        /* VIDEO PLAYER CONTAINER */
+        .channel-logo {
+            width: 34px;
+            height: 34px;
+            object-fit: contain;
+            background-color: #141414;
+            margin-right: 12px;
+        }
+
+        .channel-info { flex: 1; overflow: hidden; }
+        .channel-title { font-size: 13.5px; font-weight: 500; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .channel-meta-tags { display: flex; gap: 4px; margin-top: 2px; }
+        .tag { font-size: 9px; padding: 1px 4px; border-radius: 2px; background: #141414; color: #888; }
+
+        /* --- RIGHT SIDEBAR (VIDEO LIVE CONTAINER) --- */
         .video-container {
             flex: 1;
             background-color: #000;
             position: relative;
             height: 100%;
         }
+
         .video-js {
             width: 100% !important;
             height: 100% !important;
         }
 
-        /* --- FULL SCREEN OVERLAY OVERRIDES (AS REQUESTED) --- */
-        .video-js.vjs-fullscreen .vjs-tech {
-            pointer-events: auto; /* Catch clicks on the video stream directly */
+        .player-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border: none;
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 60;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
         }
 
-        body.fullscreen-mode .playlist-filter-section {
+        .video-container:hover .player-nav-btn { opacity: 1; }
+        .player-nav-btn.prev-btn { left: 15px; }
+        .player-nav-btn.next-btn { right: 15px; }
+
+        /* --- SPECIALIZED FULLSCREEN SYSTEM STYLES --- */
+        .main-layout.is-fullscreen .sidebar {
             position: absolute;
+            left: 0;
             top: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(17, 17, 17, 0.85);
-            backdrop-filter: blur(10px);
+            bottom: 0;
+            height: 100%;
+            box-shadow: 5px 0 25px rgba(0,0,0,0.8);
+            transform: translateX(-100%); /* Default hidden state in full screen */
         }
 
-        body.fullscreen-mode .sidebar {
-            position: absolute;
-            top: 50px;
-            left: 0;
-            height: calc(100% - 50px);
-            background: rgba(26, 26, 26, 0.85);
-            backdrop-filter: blur(10px);
-            box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+        .main-layout.is-fullscreen .sidebar.show-overlay {
+            transform: translateX(0); /* Slides open on click / ok / enter */
         }
 
-        /* Hide layout pieces cleanly when overlay is toggled off */
-        body.fullscreen-mode.hide-overlay .sidebar {
-            transform: translateX(-100%);
-            opacity: 0;
-        }
-        body.fullscreen-mode.hide-overlay .playlist-filter-section {
-            transform: translateY(-100%);
-            opacity: 0;
+        /* Responsive Mobile Layouts fallback */
+        @media (max-width: 768px) {
+            .main-layout { flex-direction: column-reverse; }
+            .sidebar { width: 100%; height: 50%; }
+            .video-container { height: 50%; }
         }
     </style>
 </head>
 <body>
 
-<div id="playlist-bar" class="playlist-filter-section">
-    <button class="playlist-btn active" id="pl-btn-ALL" onclick="selectPlaylist('ALL')">All Playlists</button>
+<div class="top-navbar">
+    <div id="playlist-bar" class="playlist-bar">
+        <button class="playlist-btn active" id="pl-btn-ALL" onclick="selectPlaylist('ALL')">📺 All Playlists</button>
+    </div>
 </div>
 
-<div class="main-layout">
+<div class="main-layout" id="app-viewport">
+    
     <div class="sidebar" id="app-sidebar">
         <div class="search-box-wrapper">
-            <input type="text" id="search-input" class="search-input" placeholder="Search channels..." oninput="applyFilters()">
+            <input type="text" id="search-input" class="search-input" placeholder="Search live channels..." oninput="applyFilters()">
         </div>
+
+        <div class="group-filter-section">
+            <div id="group-bar" class="group-filter-bar">
+                <button class="group-btn active" onclick="selectGroup('ALL')">All Groups</button>
+            </div>
+        </div>
+
         <div id="channel-list" class="channel-list">
-            <div style="padding:20px; color:var(--text-secondary); font-size:13px;">Loading streams...</div>
+            <div style="padding:20px; color:var(--text-secondary); font-size:13px;">Syncing server sources...</div>
         </div>
     </div>
 
-    <div class="video-container" id="player-zone">
+    <div class="video-container" id="video-click-zone">
+        <button class="player-nav-btn prev-btn" onclick="playPreviousChannel(); event.stopPropagation();">&#10094;</button>
+        <button class="player-nav-btn next-btn" onclick="playNextChannel(); event.stopPropagation();">&#10095;</button>
+
         <video id="iptv-player" class="video-js vjs-theme-city" controls preload="auto">
-            <p class="vjs-no-js">Enable JavaScript to run the video engine.</p>
+            <p class="vjs-no-js">Enable JavaScript to stream.</p>
         </video>
     </div>
+
 </div>
 
 <script src="https://vjs.zencdn.net/8.10.0/video.js"></script>
 
 <script>
-    // Security & contextual locks
+    // Security Context Block
     document.addEventListener('contextmenu', e => e.preventDefault());
     setInterval(() => {
         if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
@@ -223,52 +301,57 @@
         }
     }, 500);
 
+    // Initializations
     const playlistsConfig = [
-        { name: "📺Football World⚽Cup 2026", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1pvb20tQWRyL3NjcmFwZXIvcmVmcy9oZWFkcy9tYWluL1Nwb3J0engubTN1OA==") },
-        { name: "ASFA📺IPTV (SLOW NET)", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3NyaGFkeS90YXBtYWQtYmQvcmVmcy9oZWFkcy9tYWluL3RhcG1hZF9iZC5tM3U=") },
-        { name: "ASFA📺FTP (BDIX-1)", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0ZhaGFka2hhbjQxMC9iZHRlc3QvcmVmcy9oZWFkcy9tYWluL2NoYS5tM3U=") },
-        { name: "TOFFEE📺VOD", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2tvbmFuZGEtc2cvSVBUVl9lZGlleTc1MjMwMTcvcmVmcy9oZWFkcy9tYWluL0luZGlhblZPRA==") }
+        { name: "⚽Football World🏆Cup 2026", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3NyaGFkeS90YXBtYWQtYmQvcmVmcy9oZWFkcy9tYWluL3RhcG1hZF9iZC5tM3U=") },
+        { name: "ASFA📺IPTV (SLOW NET)", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0ZhaGFka2hhbjQxMC9iZHRlc3QvcmVmcy9oZWFkcy9tYWluL2NoYS5tM3U=") },
+        { name: "ASFA📺FTP (BDIX-1)", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1pvb20tQWRyL3NjcmFwZXIvcmVmcy9oZWFkcy9tYWluL1Nwb3J0engubTN1OA==") },
+        { name: "TOFFEE📺", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2tvbmFuZGEtc2cvSVBUVl9lZGlleTc1MjMwMTcvcmVmcy9oZWFkcy9tYWluL0luZGlhblZPRA==") }
     ];
 
     let player;
     let allChannels = [];
-    let filteredChannels = [];
     let currentChannelIndex = 0;
     let currentSelectedPlaylist = "ALL";
+    let currentSelectedGroup = "ALL";
 
     document.addEventListener('DOMContentLoaded', () => {
         player = videojs('iptv-player');
-        
-        // Track Fullscreen status to toggle layout modes
-        player.on('fullscreenchange', () => {
-            if (player.isFullscreen()) {
-                document.body.classList.add('fullscreen-mode');
-                document.body.classList.remove('hide-overlay'); // Show menu first
-            } else {
-                document.body.classList.remove('fullscreen-mode');
-                document.body.classList.remove('hide-overlay');
-            }
-        });
-
-        // Intercept click on technical video surface during full screen
-        player.on('click', (e) => {
-            if (player.isFullscreen()) {
-                e.preventDefault();
-                toggleFullscreenOverlay();
-            }
-        });
-
         fetchAllPlaylists(playlistsConfig);
+        setupOverlayControllers();
     });
 
-    // Toggle menu visibility when inside fullscreen mode
-    function toggleFullscreenOverlay() {
-        if (document.body.classList.contains('fullscreen-mode')) {
-            document.body.classList.toggle('hide-overlay');
-        }
+    // Handle full screen special overlay layout requests
+    function setupOverlayControllers() {
+        const viewport = document.getElementById('app-viewport');
+        const sidebar = document.getElementById('app-sidebar');
+        const clickZone = document.getElementById('video-click-zone');
+
+        // Track native fullscreen mode changes across devices
+        player.on('fullscreenchange', () => {
+            if (player.isFullscreen()) {
+                viewport.classList.add('is-fullscreen');
+                sidebar.classList.remove('show-overlay');
+            } else {
+                viewport.classList.remove('is-fullscreen');
+                sidebar.classList.remove('show-overlay');
+            }
+        });
+
+        // Click / Touch execution over player container zone
+        clickZone.addEventListener('click', (e) => {
+            if (player.isFullscreen()) {
+                // Prevent Default Play/Pause loop behavior from triggering natively
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Toggle channels menu view context
+                sidebar.classList.toggle('show-overlay');
+            }
+        });
     }
 
-    // Dynamic keyboard handling (Navigation, Volume, and Enter/OK execution)
+    // Keyboards Utilities Event Wrapper 
     document.addEventListener('keydown', event => {
         if (document.activeElement === document.getElementById('search-input')) return;
 
@@ -277,34 +360,32 @@
             return false;
         }
 
-        if (!player) return;
-
-        // Custom UI toggle action via Enter or OK button on systems/remotes
-        if (event.key === "Enter") {
-            if (player.isFullscreen()) {
+        if (player) {
+            // When fullscreen, pressing Enter or OK toggles the overlay channel selection list
+            if (player.isFullscreen() && (event.key === "Enter" || event.keyCode === 13)) {
                 event.preventDefault();
-                toggleFullscreenOverlay();
+                document.getElementById('app-sidebar').classList.toggle('show-overlay');
                 return;
             }
-        }
 
-        switch(event.key) {
-            case "ArrowUp":
-                event.preventDefault();
-                playPreviousChannel();
-                break;
-            case "ArrowDown":
-                event.preventDefault();
-                playNextChannel();
-                break;
-            case "ArrowLeft":
-                event.preventDefault();
-                player.volume(Math.max(0, player.volume() - 0.15));
-                break;
-            case "ArrowRight":
-                event.preventDefault();
-                player.volume(Math.min(1, player.volume() + 0.15));
-                break;
+            switch(event.key) {
+                case "ArrowUp":
+                    event.preventDefault();
+                    playPreviousChannel();
+                    break;
+                case "ArrowDown":
+                    event.preventDefault();
+                    playNextChannel();
+                    break;
+                case "ArrowLeft":
+                    event.preventDefault();
+                    player.volume(Math.max(0, player.volume() - 0.15));
+                    break;
+                case "ArrowRight":
+                    event.preventDefault();
+                    player.volume(Math.min(1, player.volume() + 0.15));
+                    break;
+            }
         }
     });
 
@@ -317,11 +398,9 @@
         );
 
         Promise.all(fetchPromises).then(() => {
-            if (allChannels.length === 0) {
-                document.getElementById('channel-list').innerHTML = `<div style="padding:20px; color:red;">Channels failed to load.</div>`;
-                return;
-            }
+            if (allChannels.length === 0) return;
             buildPlaylistFilterBar();
+            buildGroupFilterBar();
             applyFilters();
             if (allChannels.length > 0) playChannel(0);
         });
@@ -337,17 +416,25 @@
 
             if (line.startsWith('#EXTINF:')) {
                 currentItem = { 
-                    name: 'Live Stream Channel', 
+                    name: 'Live Channel', 
                     logo: 'https://i.postimg.cc/d3Bxy9ss/sportzx-football-live-tv-hd-logo-removebg-preview.png', 
+                    group: 'Uncategorized', 
                     playlistSource: playlistLabel,
-                    url: '' 
+                    url: '', 
+                    drmKey: null 
                 };
 
                 const logoMatch = line.match(/tvg-logo="([^"]+)"/i);
                 if (logoMatch) currentItem.logo = logoMatch[1];
 
+                const groupMatch = line.match(/group-title="([^"]+)"/i);
+                if (groupMatch) currentItem.group = groupMatch[1];
+
                 const commaIdx = line.indexOf(',');
                 if (commaIdx !== -1) currentItem.name = line.substring(commaIdx + 1).trim();
+            } 
+            else if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=')) {
+                if (currentItem) currentItem.drmKey = line.split('=')[1].trim();
             } 
             else if (!line.startsWith('#')) {
                 if (currentItem) {
@@ -361,26 +448,47 @@
 
     function buildPlaylistFilterBar() {
         const bar = document.getElementById('playlist-bar');
-        bar.innerHTML = '<button class="playlist-btn active" id="pl-btn-ALL" onclick="selectPlaylist(\'ALL\')">All Playlists</button>';
+        bar.innerHTML = '<button class="playlist-btn active" id="pl-btn-ALL" onclick="selectPlaylist(\'ALL\')">📺 All Playlists</button>';
         
         playlistsConfig.forEach(config => {
             const btn = document.createElement('button');
             btn.className = 'playlist-btn';
-            btn.id = `pl-btn-${btoa(config.name).replace(/[^a-zA-Z0-9]/g, '')}`;
+            btn.id = `pl-btn-${config.name.replace(/\s+/g, '')}`;
             btn.textContent = config.name;
             btn.onclick = () => selectPlaylist(config.name);
             bar.appendChild(btn);
         });
     }
 
+    function buildGroupFilterBar() {
+        const groupBar = document.getElementById('group-bar');
+        const filteredChannels = currentSelectedPlaylist === 'ALL' ? allChannels : allChannels.filter(ch => ch.playlistSource === currentSelectedPlaylist);
+        const categories = ['ALL', ...new Set(filteredChannels.map(ch => ch.group))];
+        
+        groupBar.innerHTML = '';
+        categories.forEach(cat => {
+            const btn = document.createElement('button');
+            btn.className = `group-btn ${cat === currentSelectedGroup ? 'active' : ''}`;
+            btn.textContent = cat;
+            btn.onclick = () => selectGroup(cat, btn);
+            groupBar.appendChild(btn);
+        });
+    }
+
     function selectPlaylist(name) {
         currentSelectedPlaylist = name;
+        currentSelectedGroup = "ALL"; 
         document.querySelectorAll('.playlist-btn').forEach(btn => btn.classList.remove('active'));
-        
-        const targetId = name === 'ALL' ? 'pl-btn-ALL' : `pl-btn-${btoa(name).replace(/[^a-zA-Z0-9]/g, '')}`;
-        const activeBtn = document.getElementById(targetId);
+        const activeBtn = document.getElementById(`pl-btn-${name.replace(/\s+/g, '')}`);
         if(activeBtn) activeBtn.classList.add('active');
+        buildGroupFilterBar();
+        applyFilters();
+    }
 
+    function selectGroup(groupName, activeBtn) {
+        currentSelectedGroup = groupName;
+        document.querySelectorAll('.group-filter-bar .group-btn').forEach(btn => btn.classList.remove('active'));
+        if(activeBtn) activeBtn.classList.add('active');
         applyFilters();
     }
 
@@ -389,39 +497,48 @@
         const listContainer = document.getElementById('channel-list');
         listContainer.innerHTML = '';
 
-        filteredChannels = allChannels.filter(channel => {
+        let displayedCount = 1;
+        allChannels.forEach((channel, originalIndex) => {
             const matchesPlaylist = (currentSelectedPlaylist === 'ALL' || channel.playlistSource === currentSelectedPlaylist);
+            const matchesGroup = (currentSelectedGroup === 'ALL' || channel.group === currentSelectedGroup);
             const matchesSearch = channel.name.toLowerCase().includes(query);
-            return matchesPlaylist && matchesSearch;
-        });
 
-        filteredChannels.forEach((channel, index) => {
-            const row = document.createElement('div');
-            row.className = `channel-item ${index === currentChannelIndex ? 'active' : ''}`;
-            row.id = `ch-item-${index}`;
-            row.onclick = () => playChannel(index);
+            if (matchesPlaylist && matchesGroup && matchesSearch) {
+                const row = document.createElement('div');
+                row.className = `channel-item ${originalIndex === currentChannelIndex ? 'active' : ''}`;
+                row.id = `ch-item-${originalIndex}`;
+                row.onclick = (e) => {
+                    e.stopPropagation();
+                    playChannel(originalIndex);
+                };
 
-            row.innerHTML = `
-                <div class="channel-index">${index + 1}</div>
-                <img class="channel-logo" src="${channel.logo}" onerror="this.src='https://i.postimg.cc/d3Bxy9ss/sportzx-football-live-tv-hd-logo-removebg-preview.png'">
-                <div class="channel-title">${channel.name}</div>
-            `;
-            listContainer.appendChild(row);
+                row.innerHTML = `
+                    <div class="channel-number">${displayedCount++}</div>
+                    <img class="channel-logo" src="${channel.logo}" onerror="this.src='https://i.postimg.cc/d3Bxy9ss/sportzx-football-live-tv-hd-logo-removebg-preview.png'">
+                    <div class="channel-info">
+                        <div class="channel-title">${channel.name}</div>
+                        <div class="channel-meta-tags">
+                            <span class="tag">${channel.group}</span>
+                        </div>
+                    </div>
+                `;
+                listContainer.appendChild(row);
+            }
         });
     }
 
     function playNextChannel() {
-        if (filteredChannels.length === 0) return;
+        if (allChannels.length === 0) return;
         let nextIndex = currentChannelIndex + 1;
-        if (nextIndex >= filteredChannels.length) nextIndex = 0;
+        if (nextIndex >= allChannels.length) nextIndex = 0;
         playChannel(nextIndex);
         scrollToActiveChannel(nextIndex);
     }
 
     function playPreviousChannel() {
-        if (filteredChannels.length === 0) return;
+        if (allChannels.length === 0) return;
         let prevIndex = currentChannelIndex - 1;
-        if (prevIndex < 0) prevIndex = filteredChannels.length - 1;
+        if (prevIndex < 0) prevIndex = allChannels.length - 1;
         playChannel(prevIndex);
         scrollToActiveChannel(prevIndex);
     }
@@ -432,10 +549,8 @@
     }
 
     function playChannel(index) {
-        if (filteredChannels.length === 0) return;
-        const channel = filteredChannels[index];
+        const channel = allChannels[index];
         if (!channel) return;
-
         currentChannelIndex = index;
 
         document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
@@ -443,16 +558,22 @@
         if(activeRow) activeRow.classList.add('active');
 
         let type = 'application/x-mpegURL'; 
-        if (channel.url.toLowerCase().includes('.mpd')) {
-            type = 'application/dash+xml';
-        } else if (channel.url.toLowerCase().includes('.mp4')) {
-            type = 'video/mp4';
-        }
+        let src = channel.url;
+        let keySystems = {};
+        const cleanUrl = src.toLowerCase().split('?')[0]; 
 
-        player.src({ src: channel.url, type: type });
-        player.ready(() => {
-            player.play().catch(() => {});
-        });
+        if (cleanUrl.includes('.mpd')) {
+            type = 'application/dash+xml';
+            if (channel.drmKey && channel.drmKey.includes(':')) {
+                const parts = channel.drmKey.split(':');
+                const kid = btoa(String.fromCharCode(...parts[0].match(/../g).map(h => parseInt(h, 16)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+                const key = btoa(String.fromCharCode(...parts[1].match(/../g).map(h => parseInt(h, 16)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+                keySystems = { 'org.w3.clearkey': { 'clearkey': { [kid]: key } } };
+            }
+        } else if (cleanUrl.includes('.mp4')) { type = 'video/mp4'; }
+
+        player.src({ src: src, type: type, keySystems: keySystems });
+        player.ready(() => { player.play().catch(() => {}); });
     }
 </script>
 </body>
