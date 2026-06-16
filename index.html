@@ -327,7 +327,7 @@
         </div>
 
         <div class="playlist-filter-section">
-            <div class="section-label">Select M3U/JSON Playlist File</div>
+            <div class="section-label">Select M3U Playlist File</div>
             <div id="playlist-bar" class="playlist-bar">
                 <button class="playlist-btn active" id="pl-btn-ALL" onclick="selectPlaylist('ALL')">All Playlists</button>
             </div>
@@ -374,9 +374,9 @@
         }
     });
 
-    // --- MULTI-SOURCE CONFIG (M3U & JSON PACKETS) ---
+    // --- MASTER CONFIG (INTEGRATED THE NEW AUTO-UPDATE TOFFEE JSON RESOURCE) ---
     const playlistsConfig = [
-        { name: "Toffee-Auto", url: "https://raw.githubusercontent.com/sm-monirulislam/Toffee-Auto-Update-Playlist/refs/heads/main/toffee_data.json" },
+        { name: "Live-Toffee", url: "https://raw.githubusercontent.com/sm-monirulislam/Toffee-Auto-Update-Playlist/refs/heads/main/toffee_data.json" },
         { name: "Live-Tapmad", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3NyaGFkeS90YXBtYWQtYmQvcmVmcy9oZWFkcy9tYWluL3RhcG1hZF9iZC5tM3U=") },
         { name: "Free-Live TV", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0ZhaGFka2hhbjQxMC9iZHRlc3QvcmVmcy9oZWFkcy9tYWluL2NoYS5tM3U=") },
         { name: "Live-FIFA 2026", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1pvb20tQWRyL3NjcmFwZXIvcmVmcy9oZWFkcy9tYWluL1Nwb3J0engubTN1OA==") },
@@ -388,9 +388,27 @@
     let currentChannelIndex = 0;
     let currentSelectedPlaylist = "ALL";
     let currentSelectedGroup = "ALL";
+    let activeCustomHeaders = null; // Keeps track of transient network tokens per stream target
 
     document.addEventListener('DOMContentLoaded', () => {
-        player = videojs('iptv-player');
+        // Initialize Player with an HTTP Header modifier intercept hook
+        player = videojs('iptv-player', {
+            html5: {
+                vhs: {
+                    beforeRequest: function(options) {
+                        if (activeCustomHeaders) {
+                            options.headers = options.headers || {};
+                            Object.keys(activeCustomHeaders).forEach(key => {
+                                // Dynamic validation injector safely updates outbound tokens
+                                options.headers[key] = activeCustomHeaders[key];
+                            });
+                        }
+                        return options;
+                    }
+                }
+            }
+        });
+        
         player.eme();
         fetchAllPlaylists(playlistsConfig);
     });
@@ -399,18 +417,17 @@
         const fetchPromises = configs.map(config => 
             fetch(config.url)
                 .then(res => res.ok ? res.text() : '')
-                .then(rawText => { 
-                    if (!rawText) return;
-                    
-                    // Route to proper structural parser matching schema layout
-                    const cleaned = rawText.trim();
-                    if (cleaned.startsWith('{') || cleaned.startsWith('[')) {
-                        parseJSONPlaylist(cleaned, config.name);
-                    } else {
-                        parseM3U(cleaned, config.name); 
+                .then(data => { 
+                    if (data) {
+                        // Routing check between raw M3U string maps and standard serialized JSON models
+                        if (data.trim().startsWith('{') || data.trim().startsWith('[')) {
+                            parseJSONPlaylist(data, config.name);
+                        } else {
+                            parseM3U(data, config.name); 
+                        }
                     }
                 })
-                .catch(err => console.error('Protected resource stream processing error protected.'))
+                .catch(err => console.error('Protected source processing exception protected safely.'))
         );
 
         Promise.all(fetchPromises).then(() => {
@@ -425,36 +442,35 @@
         });
     }
 
-    // --- JSON PARSER ENGINE ADDITION ---
-    function parseJSONPlaylist(jsonText, playlistLabel) {
+    // --- TOFFEE/DASH COMPATIBLE JSON PARSER ---
+    function parseJSONPlaylist(rawJson, playlistLabel) {
         try {
-            const data = JSON.parse(jsonText);
-            // Dynamic collection resolution matching array schemas or wrapped object layers
-            const tracks = Array.isArray(data) ? data : (data.channels || data.list || []);
+            const parsed = JSON.parse(rawJson);
+            // Resolves variants using target properties matching 'channels' or fallback elements
+            const channelsArray = parsed.channels || parsed.data || (Array.isArray(parsed) ? parsed : []);
             
-            tracks.forEach(track => {
-                if (!track) return;
-                
-                // Maps standard object property fallbacks across different scraper outputs
-                const url = track.url || track.stream_url || track.link;
-                if (!url) return;
+            channelsArray.forEach(ch => {
+                // Ensure a stream source location pointer is present
+                const streamUrl = ch.link || ch.url || ch.stream_url;
+                if (!streamUrl) return;
 
                 allChannels.push({
-                    name: track.name || track.title || 'Dynamic Channel',
-                    logo: track.logo || track.logo_url || track.image || 'https://i.postimg.cc/d3Bxy9ss/sportzx-football-live-tv-hd-logo-removebg-preview.png',
-                    group: track.group || track.category || track.group_title || 'Toffee TV',
+                    name: ch.name || 'Toffee Channel',
+                    logo: ch.logo || ch.logo_url || 'https://i.postimg.cc/d3Bxy9ss/sportzx-football-live-tv-hd-logo-removebg-preview.png',
+                    group: ch.group || ch.category || 'Toffee TV',
                     playlistSource: playlistLabel,
-                    url: url,
-                    drmType: track.drmType || track.license_type || 'clearkey',
-                    drmKey: track.drmKey || track.license_key || track.key || null
+                    url: streamUrl,
+                    drmType: ch.drm_type || 'clearkey',
+                    drmKey: ch.license_key || ch.key || ch.drm_key || null,
+                    headers: ch.headers || null // Binds specific security cookie wrappers securely
                 });
             });
         } catch(e) {
-            console.error("JSON structure parsing configuration conflict bypassed.", e);
+            console.error("JSON track normalization anomaly tracking bypassed.");
         }
     }
 
-    // --- M3U / OTT EXTENDED MULTI-PROP PARSER ---
+    // --- STANDARD M3U EXTENDED PARSER ---
     function parseM3U(data, playlistLabel) {
         const lines = data.split('\n');
         let currentItem = null;
@@ -471,7 +487,8 @@
                     playlistSource: playlistLabel,
                     url: '', 
                     drmType: 'clearkey',
-                    drmKey: null 
+                    drmKey: null,
+                    headers: null
                 };
 
                 const logoMatch = line.match(/tvg-logo="([^"]+)"/i);
@@ -621,7 +638,6 @@
         if (element) element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    // Hex to Safe Base64URL Converter Engine
     function base64UrlFromHex(hexString) {
         const cleanHex = hexString.trim().replace(/[-]/g, '');
         const bytes = new Uint8Array(cleanHex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
@@ -648,6 +664,9 @@
         document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
         const activeRow = document.getElementById(`ch-item-${index}`);
         if(activeRow) activeRow.classList.add('active');
+
+        // Reset or assign the required authorization headers for the runtime player instance
+        activeCustomHeaders = channel.headers;
 
         let type = 'application/x-mpegURL'; 
         let src = channel.url;
@@ -689,7 +708,7 @@
                                 }
                             }
                         };
-                    } catch(e) { console.error("Key map tracking skipped safely."); }
+                    } catch(e) { console.error("Key tracking error resolution bypassed."); }
                 }
                 else if (channel.drmKey.startsWith('http')) {
                     const keySys = channel.drmType === 'widevine' ? 'com.widevine.alpha' : 'org.w3.clearkey';
@@ -703,7 +722,7 @@
 
         player.src({ src: src, type: type, emeOptions: emeOptions });
         player.ready(() => {
-            player.play().catch(err => console.log('Interactive trigger deferred safely.'));
+            player.play().catch(err => console.log('Interactive stream call deferred.'));
         });
     }
 </script>
