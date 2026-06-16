@@ -124,46 +124,45 @@
 
         .search-input:focus { border-color: var(--accent-blue); }
 
-        /* --- NETWORK STREAM PLAYER CONTAINER --- */
-        .network-stream-section {
+        /* Custom Network URL Input Section */
+        .url-loader-section {
             padding: 12px 15px;
-            background-color: #161619;
+            background-color: #141417;
             border-bottom: 1px solid var(--border-color);
         }
-        
-        .stream-input-group {
+
+        .url-input-container {
             display: flex;
             gap: 6px;
-            margin-top: 4px;
         }
-        
-        .stream-input {
+
+        .url-input {
             flex: 1;
             padding: 8px 12px;
-            background-color: #0f0f11;
-            border: 1px solid #2d2d35;
+            background-color: #1a1a1e;
+            border: 1px solid #33333a;
             color: var(--text-main);
             border-radius: 4px;
             font-size: 12px;
             outline: none;
         }
-        
-        .stream-input:focus { border-color: var(--accent-blue); }
-        
-        .stream-play-btn {
+
+        .url-input:focus { border-color: var(--accent-blue); }
+
+        .url-btn {
             background-color: var(--accent-blue);
             color: #fff;
             border: none;
             padding: 0 14px;
             border-radius: 4px;
             font-size: 12px;
-            font-weight: 500;
             cursor: pointer;
             transition: background 0.2s;
+            font-weight: 500;
         }
-        
-        .stream-play-btn:hover {
-            background-color: #0063b1;
+
+        .url-btn:hover {
+            background-color: #005a9e;
         }
 
         .playlist-filter-section {
@@ -185,6 +184,8 @@
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
+            max-height: 100px;
+            overflow-y: auto;
         }
         
         .playlist-btn {
@@ -424,11 +425,11 @@
             <input type="text" id="search-input" class="search-input" placeholder="Search across all channels & VOD..." oninput="applyFilters()">
         </div>
 
-        <div class="network-stream-section">
-            <div class="section-label">Play Network Stream URL</div>
-            <div class="stream-input-group">
-                <input type="text" id="stream-url-input" class="stream-input" placeholder="Paste custom M3U8, MPD, MP4 link...">
-                <button class="stream-play-btn" onclick="playNetworkStream()">Play</button>
+        <div class="url-loader-section">
+            <div class="section-label">Load Network Stream URL</div>
+            <div class="url-input-container">
+                <input type="text" id="network-url-input" class="url-input" placeholder="Paste .m3u / .m3u8 link here...">
+                <button class="url-btn" onclick="loadNetworkPlaylist()">Load</button>
             </div>
         </div>
 
@@ -470,7 +471,7 @@
     // --- GLOBAL KEYBOARD UTILITIES (NAVIGATION & VOLUME) ---
     document.addEventListener('keydown', event => {
         if (document.activeElement === document.getElementById('search-input') || 
-            document.activeElement === document.getElementById('stream-url-input')) {
+            document.activeElement === document.getElementById('network-url-input')) {
             return;
         }
 
@@ -538,17 +539,64 @@
         );
 
         Promise.all(fetchPromises).then(() => {
-            if (allChannels.length === 0) {
-                document.getElementById('channel-list').innerHTML = `<div style="padding:20px; color:#ff4444; font-size:13px;">Failed to initialize resources.</div>`;
-                return;
-            }
-            
-            buildPlaylistFilterBar();
-            buildGroupFilterBar();
-            applyFilters();
-            
+            refreshUIElements();
             if (allChannels.length > 0) playChannel(0);
         });
+    }
+
+    // Function handler to inject custom web network playlists dynamically
+    function loadNetworkPlaylist() {
+        const urlInput = document.getElementById('network-url-input');
+        const url = urlInput.value.trim();
+        
+        if (!url) {
+            alert("Please enter a valid M3U stream URL address.");
+            return;
+        }
+
+        // Generate a recognizable custom source name label
+        const customName = "Network-Src-" + (playlistsConfig.length - 3);
+        
+        document.getElementById('channel-list').innerHTML = `<div style="padding:20px; color:var(--text-secondary); font-size:13px;">Fetching dynamic network resource...</div>`;
+        
+        fetch(url)
+            .then(res => {
+                if (!res.ok) throw new Error("Network configuration failed to reply.");
+                return res.text();
+            })
+            .then(data => {
+                if (!data) {
+                    alert("Empty response received from playlist provider resource link.");
+                    applyFilters();
+                    return;
+                }
+                
+                // Add to internal list and execute parse routines
+                playlistsConfig.push({ name: customName, url: url });
+                parseM3U(data, customName);
+                
+                refreshUIElements();
+                urlInput.value = '';
+                
+                // Jump selection automatically to focus on the newly imported list parameters
+                selectPlaylist(customName);
+                alert(`Successfully parsed custom network playlist: ${customName}`);
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Failed to load or parse network playlist. Ensure CORS headers permit resource reading.");
+                applyFilters();
+            });
+    }
+
+    function refreshUIElements() {
+        if (allChannels.length === 0) {
+            document.getElementById('channel-list').innerHTML = `<div style="padding:20px; color:#ff4444; font-size:13px;">Failed to initialize resources.</div>`;
+            return;
+        }
+        buildPlaylistFilterBar();
+        buildGroupFilterBar();
+        applyFilters();
     }
 
     function parseM3U(data, playlistLabel) {
@@ -593,11 +641,11 @@
 
     function buildPlaylistFilterBar() {
         const bar = document.getElementById('playlist-bar');
-        bar.innerHTML = '<button class="playlist-btn active" id="pl-btn-ALL" onclick="selectPlaylist(\'ALL\')">All Playlists</button>';
+        bar.innerHTML = '<button class="playlist-btn ' + (currentSelectedPlaylist === "ALL" ? "active" : "") + '" id="pl-btn-ALL" onclick="selectPlaylist(\'ALL\')">All Playlists</button>';
         
         playlistsConfig.forEach(config => {
             const btn = document.createElement('button');
-            btn.className = 'playlist-btn';
+            btn.className = `playlist-btn ${config.name === currentSelectedPlaylist ? 'active' : ''}`;
             btn.id = `pl-btn-${config.name.replace(/\s+/g, '')}`;
             btn.textContent = config.name;
             btn.onclick = () => selectPlaylist(config.name);
@@ -727,34 +775,6 @@
         if (element) {
             element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
-    }
-
-    // --- LOGIC FOR PLAYING CUSTOM MANUALLY PASTED NETWORK URLS ---
-    function playNetworkStream() {
-        const urlInput = document.getElementById('stream-url-input').value.trim();
-        if (!urlInput) {
-            alert("Please enter a valid network stream URL first.");
-            return;
-        }
-
-        // Remove active CSS states from loaded playlist lists
-        document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
-        currentChannelIndex = -1; // Reset tracking index pointer
-
-        let type = 'application/x-mpegURL'; 
-        const cleanUrl = urlInput.toLowerCase().split('?')[0]; 
-
-        if (cleanUrl.includes('.mpd')) { type = 'application/dash+xml'; } 
-        else if (cleanUrl.includes('.mp4')) { type = 'video/mp4'; } 
-        else if (cleanUrl.includes('.mkv')) { type = 'video/x-matroska'; } 
-        else if (cleanUrl.includes('.webm')) { type = 'video/webm'; } 
-        else if (cleanUrl.includes('.ogv') || cleanUrl.includes('.ogg')) { type = 'video/ogg'; } 
-        else if (cleanUrl.includes('.mov') || cleanUrl.includes('.avi')) { type = 'video/mp4'; }
-
-        player.src({ src: urlInput, type: type, keySystems: {} });
-        player.ready(() => {
-            player.play().catch(e => console.log('Autoplay execution deferred.'));
-        });
     }
 
     function playChannel(index) {
