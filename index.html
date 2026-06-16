@@ -342,6 +342,12 @@
             margin-left: auto !important;
         }
 
+        /* Fix layout styling for dynamic VideoJS audio menu buttons */
+        .video-js .vjs-audio-button {
+            display: inline-block !important;
+            order: 9;
+        }
+
         @media (max-width: 992px) {
             body {
                 overflow-y: auto;
@@ -472,8 +478,7 @@
     const playlistsConfig = [
         { name: "Live-Tapmad", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3NyaGFkeS90YXBtYWQtYmQvcmVmcy9oZWFkcy9tYWluL3RhcG1hZF9iZC5tM3U=") },
         { name: "Free-Live TV", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0ZhaGFka2hhbjQxMC9iZHRlc3QvcmVmcy9oZWFkcy9tYWluL2NoYS5tM3U=") },
-        { name: "Live-FIFA 2026", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1pvb20tQWRyL3NjcmFwZXIvcmVmcy9oZWFkcy9tYWluL1Nwb3J0engubTN1OA==") },
-        { name: "Movies-VOD", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2tvbmFuZGEtc2cvSVBUVl9lZGlleTc1MjMwMTcvcmVmcy9oZWFkcy9tYWluL0luZGlhblZPRA==") }
+        { name: "Movies-VOD", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2tvbmFuZGEtc2cvSVBUVl9lZGlieTc1MjMwMTcvcmVmcy9oZWFkcy9tYWluL0luZGlhblZPRA==") }
     ];
 
     let player;
@@ -483,7 +488,12 @@
     let currentSelectedGroup = "ALL";
 
     document.addEventListener('DOMContentLoaded', () => {
-        player = videojs('iptv-player');
+        // Instantiate modern Video.js options supporting implicit multi-audio tracking
+        player = videojs('iptv-player', {
+            controlBar: {
+                audioTrackButton: true
+            }
+        });
         fetchAllPlaylists(playlistsConfig);
     });
 
@@ -701,7 +711,7 @@
 
         let type = 'application/x-mpegURL'; 
         let src = channel.url;
-        let keySystems = {};
+        let playerOptions = {};
 
         const cleanUrl = src.toLowerCase().split('?')[0]; 
 
@@ -710,11 +720,19 @@
             
             if (channel.drmKey && channel.drmKey.includes(':')) {
                 const parts = channel.drmKey.split(':');
+                // Convert hexadecimal strings safely into Base64 ClearKey representations
                 const kid = btoa(String.fromCharCode(...parts[0].match(/../g).map(h => parseInt(h, 16)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
                 const key = btoa(String.fromCharCode(...parts[1].match(/../g).map(h => parseInt(h, 16)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
                 
-                keySystems = {
-                    'org.w3.clearkey': { 'clearkey': { [kid]: key } }
+                // Formulate target system parameters utilizing standard Encrypted Media Extensions formatting
+                playerOptions = {
+                    keySystems: {
+                        'org.w3.clearkey': {
+                            clearkey: {
+                                [kid]: key
+                            }
+                        }
+                    }
                 };
             }
         } 
@@ -724,7 +742,9 @@
         else if (cleanUrl.includes('.ogv') || cleanUrl.includes('.ogg')) { type = 'video/ogg'; } 
         else if (cleanUrl.includes('.mov') || cleanUrl.includes('.avi')) { type = 'video/mp4'; }
 
-        player.src({ src: src, type: type, keySystems: keySystems });
+        // Set source safely using the nested options object wrapper
+        player.src({ src: src, type: type, ...playerOptions });
+        
         player.ready(() => {
             player.play().catch(e => console.log('Autoplay deferred.'));
         });
