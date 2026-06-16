@@ -327,7 +327,7 @@
         </div>
 
         <div class="playlist-filter-section">
-            <div class="section-label">Select M3U Playlist File</div>
+            <div class="section-label">Select M3U/JSON Playlist File</div>
             <div id="playlist-bar" class="playlist-bar">
                 <button class="playlist-btn active" id="pl-btn-ALL" onclick="selectPlaylist('ALL')">All Playlists</button>
             </div>
@@ -374,11 +374,12 @@
         }
     });
 
-    // --- MULTI-SOURCE CONFIG (BASE64 PROTECTED CORES) ---
+    // --- MULTI-SOURCE CONFIG (M3U & JSON PACKETS) ---
     const playlistsConfig = [
+        { name: "Toffee-Auto", url: "https://raw.githubusercontent.com/sm-monirulislam/Toffee-Auto-Update-Playlist/refs/heads/main/toffee_data.json" },
         { name: "Live-Tapmad", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3NyaGFkeS90YXBtYWQtYmQvcmVmcy9oZWFkcy9tYWluL3RhcG1hZF9iZC5tM3U=") },
         { name: "Free-Live TV", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0ZhaGFka2hhbjQxMC9iZHRlc3QvcmVmcy9oZWFkcy9tYWluL2NoYS5tM3U=") },
-        { name: "Live-FIFA 2026", url: atob("https://raw.githubusercontent.com/sm-monirulislam/Toffee-Auto-Update-Playlist/refs/heads/main/toffee_data.json") },
+        { name: "Live-FIFA 2026", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1pvb20tQWRyL3NjcmFwZXIvcmVmcy9oZWFkcy9tYWluL1Nwb3J0engubTN1OA==") },
         { name: "Movies-VOD", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2tvbmFuZGEtc2cvSVBUVl9lZGlleTc1MjMwMTcvcmVmcy9oZWFkcy9tYWluL0luZGlhblZPRA==") }
     ];
 
@@ -398,8 +399,18 @@
         const fetchPromises = configs.map(config => 
             fetch(config.url)
                 .then(res => res.ok ? res.text() : '')
-                .then(data => { if (data) parseM3U(data, config.name); })
-                .catch(err => console.error('Protected source skipped.'))
+                .then(rawText => { 
+                    if (!rawText) return;
+                    
+                    // Route to proper structural parser matching schema layout
+                    const cleaned = rawText.trim();
+                    if (cleaned.startsWith('{') || cleaned.startsWith('[')) {
+                        parseJSONPlaylist(cleaned, config.name);
+                    } else {
+                        parseM3U(cleaned, config.name); 
+                    }
+                })
+                .catch(err => console.error('Protected resource stream processing error protected.'))
         );
 
         Promise.all(fetchPromises).then(() => {
@@ -414,7 +425,36 @@
         });
     }
 
-    // --- EXTENDED PARSER WITH OTT NAVIGATOR MULTI-TAG LAWS ---
+    // --- JSON PARSER ENGINE ADDITION ---
+    function parseJSONPlaylist(jsonText, playlistLabel) {
+        try {
+            const data = JSON.parse(jsonText);
+            // Dynamic collection resolution matching array schemas or wrapped object layers
+            const tracks = Array.isArray(data) ? data : (data.channels || data.list || []);
+            
+            tracks.forEach(track => {
+                if (!track) return;
+                
+                // Maps standard object property fallbacks across different scraper outputs
+                const url = track.url || track.stream_url || track.link;
+                if (!url) return;
+
+                allChannels.push({
+                    name: track.name || track.title || 'Dynamic Channel',
+                    logo: track.logo || track.logo_url || track.image || 'https://i.postimg.cc/d3Bxy9ss/sportzx-football-live-tv-hd-logo-removebg-preview.png',
+                    group: track.group || track.category || track.group_title || 'Toffee TV',
+                    playlistSource: playlistLabel,
+                    url: url,
+                    drmType: track.drmType || track.license_type || 'clearkey',
+                    drmKey: track.drmKey || track.license_key || track.key || null
+                });
+            });
+        } catch(e) {
+            console.error("JSON structure parsing configuration conflict bypassed.", e);
+        }
+    }
+
+    // --- M3U / OTT EXTENDED MULTI-PROP PARSER ---
     function parseM3U(data, playlistLabel) {
         const lines = data.split('\n');
         let currentItem = null;
@@ -430,7 +470,7 @@
                     group: 'Uncategorized', 
                     playlistSource: playlistLabel,
                     url: '', 
-                    drmType: 'clearkey', // Default fallback schema
+                    drmType: 'clearkey',
                     drmKey: null 
                 };
 
@@ -443,7 +483,6 @@
                 const commaIdx = line.indexOf(',');
                 if (commaIdx !== -1) currentItem.name = line.substring(commaIdx + 1).trim();
             } 
-            // OTT Navigator / Kodi extended KODIPROP structural checks
             else if (line.startsWith('#KODIPROP:')) {
                 if (!currentItem) continue;
                 const propContent = line.replace('#KODIPROP:', '').trim();
@@ -454,7 +493,6 @@
                     const val = propContent.substring(eqIdx + 1).trim();
 
                     if (key === 'inputstream.adaptive.license_type') {
-                        // Captures Widevine or Clearkey configurations
                         currentItem.drmType = val.toLowerCase().includes('widevine') ? 'widevine' : 'clearkey';
                     } 
                     else if (key === 'inputstream.adaptive.license_key' || key === 'inputstream.adaptive.license_data') {
@@ -592,7 +630,6 @@
         return btoa(binary).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
     }
 
-    // Checks if string layout matches valid direct JSON mapping arrays
     function cleanJsonParsing(rawStr) {
         try {
             const cleaned = rawStr.trim();
@@ -621,30 +658,22 @@
             type = 'application/dash+xml';
             
             if (channel.drmKey) {
-                // Scenario A: Standard OTT Navigator Direct JSON format
                 const jsonKeys = cleanJsonParsing(channel.drmKey);
                 
                 if (jsonKeys) {
                     if (channel.drmType === 'widevine') {
-                        // Widevine keys target standard license URLs direct linking
-                        emeOptions = {
-                            keySystems: { 'com.widevine.alpha': { url: src } }
-                        };
+                        emeOptions = { keySystems: { 'com.widevine.alpha': { url: src } } };
                     } else {
-                        // Clearkey parse mapping
                         let clearkeyMap = {};
                         let keysArray = jsonKeys.keys || (Array.isArray(jsonKeys) ? jsonKeys : []);
                         keysArray.forEach(kItem => {
-                            if (kItem.kid && kItem.k) {
-                                clearkeyMap[kItem.kid] = kItem.k;
-                            }
+                            if (kItem.kid && kItem.k) clearkeyMap[kItem.kid] = kItem.k;
                         });
                         if (Object.keys(clearkeyMap).length > 0) {
                             emeOptions = { keySystems: { 'org.w3.clearkey': { clearkey: clearkeyMap } } };
                         }
                     }
                 } 
-                // Scenario B: Standard KID:KEY Hex legacy string combination
                 else if (channel.drmKey.includes(':')) {
                     try {
                         const parts = channel.drmKey.split(':');
@@ -662,7 +691,6 @@
                         };
                     } catch(e) { console.error("Key map tracking skipped safely."); }
                 }
-                // Scenario C: If a direct remote proxy license tracking server URL is given instead
                 else if (channel.drmKey.startsWith('http')) {
                     const keySys = channel.drmType === 'widevine' ? 'com.widevine.alpha' : 'org.w3.clearkey';
                     emeOptions = { keySystems: { [keySys]: { url: channel.drmKey } } };
