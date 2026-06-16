@@ -374,9 +374,9 @@
         }
     });
 
-    // --- MASTER CONFIG (INTEGRATED THE NEW AUTO-UPDATE TOFFEE JSON RESOURCE) ---
+    // --- MULTI-SOURCE CONFIG (INCLUDING YOUR TOFFEE AUTOMATION REPO) ---
     const playlistsConfig = [
-        { name: "Live-Toffee", url: "https://raw.githubusercontent.com/sm-monirulislam/Toffee-Auto-Update-Playlist/refs/heads/main/toffee_data.json" },
+        { name: "Live-Toffee", url: "https://raw.githubusercontent.com/sm-monirulislam/Toffee-Auto-Update-Playlist/refs/heads/main/OTT_Navigator.m3u" },
         { name: "Live-Tapmad", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3NyaGFkeS90YXBtYWQtYmQvcmVmcy9oZWFkcy9tYWluL3RhcG1hZF9iZC5tM3U=") },
         { name: "Free-Live TV", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0ZhaGFka2hhbjQxMC9iZHRlc3QvcmVmcy9oZWFkcy9tYWluL2NoYS5tM3U=") },
         { name: "Live-FIFA 2026", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1pvb20tQWRyL3NjcmFwZXIvcmVmcy9oZWFkcy9tYWluL1Nwb3J0engubTN1OA==") },
@@ -388,27 +388,9 @@
     let currentChannelIndex = 0;
     let currentSelectedPlaylist = "ALL";
     let currentSelectedGroup = "ALL";
-    let activeCustomHeaders = null; // Keeps track of transient network tokens per stream target
 
     document.addEventListener('DOMContentLoaded', () => {
-        // Initialize Player with an HTTP Header modifier intercept hook
-        player = videojs('iptv-player', {
-            html5: {
-                vhs: {
-                    beforeRequest: function(options) {
-                        if (activeCustomHeaders) {
-                            options.headers = options.headers || {};
-                            Object.keys(activeCustomHeaders).forEach(key => {
-                                // Dynamic validation injector safely updates outbound tokens
-                                options.headers[key] = activeCustomHeaders[key];
-                            });
-                        }
-                        return options;
-                    }
-                }
-            }
-        });
-        
+        player = videojs('iptv-player');
         player.eme();
         fetchAllPlaylists(playlistsConfig);
     });
@@ -417,17 +399,8 @@
         const fetchPromises = configs.map(config => 
             fetch(config.url)
                 .then(res => res.ok ? res.text() : '')
-                .then(data => { 
-                    if (data) {
-                        // Routing check between raw M3U string maps and standard serialized JSON models
-                        if (data.trim().startsWith('{') || data.trim().startsWith('[')) {
-                            parseJSONPlaylist(data, config.name);
-                        } else {
-                            parseM3U(data, config.name); 
-                        }
-                    }
-                })
-                .catch(err => console.error('Protected source processing exception protected safely.'))
+                .then(data => { if (data) parseM3U(data, config.name); })
+                .catch(err => console.error('Protected source skipped.'))
         );
 
         Promise.all(fetchPromises).then(() => {
@@ -442,35 +415,7 @@
         });
     }
 
-    // --- TOFFEE/DASH COMPATIBLE JSON PARSER ---
-    function parseJSONPlaylist(rawJson, playlistLabel) {
-        try {
-            const parsed = JSON.parse(rawJson);
-            // Resolves variants using target properties matching 'channels' or fallback elements
-            const channelsArray = parsed.channels || parsed.data || (Array.isArray(parsed) ? parsed : []);
-            
-            channelsArray.forEach(ch => {
-                // Ensure a stream source location pointer is present
-                const streamUrl = ch.link || ch.url || ch.stream_url;
-                if (!streamUrl) return;
-
-                allChannels.push({
-                    name: ch.name || 'Toffee Channel',
-                    logo: ch.logo || ch.logo_url || 'https://i.postimg.cc/d3Bxy9ss/sportzx-football-live-tv-hd-logo-removebg-preview.png',
-                    group: ch.group || ch.category || 'Toffee TV',
-                    playlistSource: playlistLabel,
-                    url: streamUrl,
-                    drmType: ch.drm_type || 'clearkey',
-                    drmKey: ch.license_key || ch.key || ch.drm_key || null,
-                    headers: ch.headers || null // Binds specific security cookie wrappers securely
-                });
-            });
-        } catch(e) {
-            console.error("JSON track normalization anomaly tracking bypassed.");
-        }
-    }
-
-    // --- STANDARD M3U EXTENDED PARSER ---
+    // --- PARSER EXTENDED FOR ADVANCED TOFFEE / KODI NETWORK HEADERS ---
     function parseM3U(data, playlistLabel) {
         const lines = data.split('\n');
         let currentItem = null;
@@ -488,7 +433,7 @@
                     url: '', 
                     drmType: 'clearkey',
                     drmKey: null,
-                    headers: null
+                    headers: {} // Holds parsed HTTP payload requirements (Cookie, Host, UA)
                 };
 
                 const logoMatch = line.match(/tvg-logo="([^"]+)"/i);
@@ -509,11 +454,17 @@
                     const key = propContent.substring(0, eqIdx).trim();
                     const val = propContent.substring(eqIdx + 1).trim();
 
+                    // Identifies native security parameters inside the M3U
                     if (key === 'inputstream.adaptive.license_type') {
                         currentItem.drmType = val.toLowerCase().includes('widevine') ? 'widevine' : 'clearkey';
                     } 
                     else if (key === 'inputstream.adaptive.license_key' || key === 'inputstream.adaptive.license_data') {
                         currentItem.drmKey = val;
+                    }
+                    // Checks if properties are mapping explicit network stream requirements
+                    else if (key.toLowerCase().includes('http_')) {
+                        const headerName = key.replace(/http_/i, '').replace(/_/g, '-');
+                        currentItem.headers[headerName] = val;
                     }
                 }
             } 
@@ -665,9 +616,6 @@
         const activeRow = document.getElementById(`ch-item-${index}`);
         if(activeRow) activeRow.classList.add('active');
 
-        // Reset or assign the required authorization headers for the runtime player instance
-        activeCustomHeaders = channel.headers;
-
         let type = 'application/x-mpegURL'; 
         let src = channel.url;
         let emeOptions = undefined;
@@ -678,7 +626,6 @@
             
             if (channel.drmKey) {
                 const jsonKeys = cleanJsonParsing(channel.drmKey);
-                
                 if (jsonKeys) {
                     if (channel.drmType === 'widevine') {
                         emeOptions = { keySystems: { 'com.widevine.alpha': { url: src } } };
@@ -698,7 +645,6 @@
                         const parts = channel.drmKey.split(':');
                         const kidB64Url = base64UrlFromHex(parts[0]);
                         const keyB64Url = base64UrlFromHex(parts[1]);
-                        
                         emeOptions = {
                             keySystems: {
                                 'org.w3.clearkey': {
@@ -708,7 +654,7 @@
                                 }
                             }
                         };
-                    } catch(e) { console.error("Key tracking error resolution bypassed."); }
+                    } catch(e) { console.error("Key handling tracking skipped safely."); }
                 }
                 else if (channel.drmKey.startsWith('http')) {
                     const keySys = channel.drmType === 'widevine' ? 'com.widevine.alpha' : 'org.w3.clearkey';
@@ -720,9 +666,29 @@
         else if (cleanUrl.includes('.mkv')) { type = 'video/x-matroska'; } 
         else if (cleanUrl.includes('.webm')) { type = 'video/webm'; }
 
-        player.src({ src: src, type: type, emeOptions: emeOptions });
+        // --- DYNAMIC REQUEST HEADER INTERCEPTOR FOR VIDEOJS / HLS TECH ---
+        const xhrOptions = {};
+        if (channel.headers && Object.keys(channel.headers).length > 0) {
+            xhrOptions.beforeSend = function(xhr) {
+                Object.keys(channel.headers).forEach(headerKey => {
+                    // Inject extracted Toffee authentication values directly into backend player request loops
+                    xhr.setRequestHeader(headerKey, channel.headers[headerKey]);
+                });
+            };
+        }
+
+        player.src({ 
+            src: src, 
+            type: type, 
+            emeOptions: emeOptions,
+            html5: {
+                vhs: { xhrSetup: xhrOptions.beforeSend },
+                hls: { xhrSetup: xhrOptions.beforeSend }
+            }
+        });
+
         player.ready(() => {
-            player.play().catch(err => console.log('Interactive stream call deferred.'));
+            player.play().catch(err => console.log('Playback initialization tracking skipped safely.'));
         });
     }
 </script>
