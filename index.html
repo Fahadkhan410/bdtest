@@ -351,15 +351,15 @@
                     break;
                 case "ArrowLeft":
                     event.preventDefault();
-                    // Drop volume by 5% increments, floor at 0
+                    // Drop volume by 15% increments, floor at 0
                     let currentVolDown = player.volume();
-                    player.volume(Math.max(0, currentVolDown - 0.05));
+                    player.volume(Math.max(0, currentVolDown - 0.15));
                     break;
                 case "ArrowRight":
                     event.preventDefault();
-                    // Raise volume by 5% increments, ceiling at 100%
+                    // Raise volume by 15% increments, ceiling at 100%
                     let currentVolUp = player.volume();
-                    player.volume(Math.min(1, currentVolUp + 0.05));
+                    player.volume(Math.min(1, currentVolUp + 0.15));
                     break;
             }
         }
