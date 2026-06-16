@@ -26,7 +26,6 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            /* Prevents users from highlighting text/elements easily */
             user-select: none;
             -webkit-user-select: none;
         }
@@ -229,7 +228,6 @@
 
         .footer-note { padding: 10px; text-align: center; font-size: 11px; color: #55555d; border-top: 1px solid var(--border-color); background-color: #0e0e10; }
 
-        /* --- RESPONSIVE MEDIA QUERIES --- */
         @media (max-width: 992px) {
             body {
                 overflow-y: auto;
@@ -308,37 +306,30 @@
 
 <script>
     // --- UI PROTECTION CONTROLS ---
-    
-    // Disable right click context menu
     document.addEventListener('contextmenu', event => event.preventDefault());
 
-    // Anti-debugging loop: Pauses execution if DevTools is opened
     setInterval(function() {
         if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
             (function() { return false; }['constructor']('debugger')());
         }
     }, 500);
 
-
     // --- GLOBAL KEYBOARD UTILITIES (NAVIGATION & VOLUME) ---
     document.addEventListener('keydown', event => {
-        // Prevent hotkey overrides when typing inside the channel search box
         if (document.activeElement === document.getElementById('search-input')) {
             return;
         }
 
-        // Handle structural keys for DevTools protection blocks
         if (
-            event.keyCode === 123 || // F12 key
-            (event.ctrlKey && event.shiftKey && event.keyCode === 73) || // Ctrl+Shift+I
-            (event.ctrlKey && event.shiftKey && event.keyCode === 74) || // Ctrl+Shift+J
-            (event.ctrlKey && event.keyCode === 85) // Ctrl+U
+            event.keyCode === 123 || 
+            (event.ctrlKey && event.shiftKey && event.keyCode === 73) || 
+            (event.ctrlKey && event.shiftKey && event.keyCode === 74) || 
+            (event.ctrlKey && event.keyCode === 85)
         ) {
             event.preventDefault();
             return false;
         }
 
-        // Arrow controls wrapper logic
         if (player) {
             switch(event.key) {
                 case "ArrowUp":
@@ -351,13 +342,11 @@
                     break;
                 case "ArrowLeft":
                     event.preventDefault();
-                    // Drop volume by 15% increments, floor at 0
                     let currentVolDown = player.volume();
                     player.volume(Math.max(0, currentVolDown - 0.15));
                     break;
                 case "ArrowRight":
                     event.preventDefault();
-                    // Raise volume by 15% increments, ceiling at 100%
                     let currentVolUp = player.volume();
                     player.volume(Math.min(1, currentVolUp + 0.15));
                     break;
@@ -365,8 +354,7 @@
         }
     });
 
-
-    // --- PLAYLIST CONFIGURATION (OBLITERATED VIA BASE64) ---
+    // --- PLAYLIST CONFIGURATION ---
     const playlistsConfig = [
         { name: "Live-Tapmad", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3NyaGFkeS90YXBtYWQtYmQvcmVmcy9oZWFkcy9tYWluL3RhcG1hZF9iZC5tM3U=") },
         { name: "Free-Live TV", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0ZhaGFka2hhbjQxMC9iZHRlc3QvcmVmcy9oZWFkcy9tYWluL2NoYS5tM3U=") },
@@ -501,52 +489,84 @@
         applyFilters();
     }
 
-    function applyFilters() {
+    // Helper mapping tracking array indices that pass active client-side viewport configurations
+    function getFilteredIndices() {
         const query = document.getElementById('search-input').value.toLowerCase();
-        const listContainer = document.getElementById('channel-list');
-        listContainer.innerHTML = '';
-
-        allChannels.forEach((channel, originalIndex) => {
+        const indices = [];
+        
+        allChannels.forEach((channel, index) => {
             const matchesPlaylist = (currentSelectedPlaylist === 'ALL' || channel.playlistSource === currentSelectedPlaylist);
             const matchesGroup = (currentSelectedGroup === 'ALL' || channel.group === currentSelectedGroup);
             const matchesSearch = channel.name.toLowerCase().includes(query);
 
             if (matchesPlaylist && matchesGroup && matchesSearch) {
-                const row = document.createElement('div');
-                row.className = `channel-item`;
-                row.id = `ch-item-${originalIndex}`;
-                row.onclick = () => playChannel(originalIndex);
-
-                row.innerHTML = `
-                    <img class="channel-logo" src="${channel.logo}" onerror="this.src='https://i.postimg.cc/d3Bxy9ss/sportzx-football-live-tv-hd-logo-removebg-preview.png'">
-                    <div class="channel-info">
-                        <div class="channel-title">${channel.name}</div>
-                        <div class="channel-meta-tags">
-                            <span class="tag src-tag">${channel.playlistSource}</span>
-                            <span class="tag">${channel.group}</span>
-                        </div>
-                    </div>
-                `;
-                listContainer.appendChild(row);
+                indices.push(index);
             }
+        });
+        return indices;
+    }
+
+    function applyFilters() {
+        const listContainer = document.getElementById('channel-list');
+        listContainer.innerHTML = '';
+        const visibleIndices = getFilteredIndices();
+
+        if (visibleIndices.length === 0) {
+            listContainer.innerHTML = `<div style="padding:20px; color:var(--text-secondary); font-size:13px;">No channels matches filters.</div>`;
+            return;
+        }
+
+        visibleIndices.forEach((originalIndex) => {
+            const channel = allChannels[originalIndex];
+            const row = document.createElement('div');
+            row.className = `channel-item ${originalIndex === currentChannelIndex ? 'active' : ''}`;
+            row.id = `ch-item-${originalIndex}`;
+            row.onclick = () => playChannel(originalIndex);
+
+            row.innerHTML = `
+                <img class="channel-logo" src="${channel.logo}" onerror="this.src='https://i.postimg.cc/d3Bxy9ss/sportzx-football-live-tv-hd-logo-removebg-preview.png'">
+                <div class="channel-info">
+                    <div class="channel-title">${channel.name}</div>
+                    <div class="channel-meta-tags">
+                        <span class="tag src-tag">${channel.playlistSource}</span>
+                        <span class="tag">${channel.group}</span>
+                    </div>
+                </div>
+            `;
+            listContainer.appendChild(row);
         });
     }
 
     function playNextChannel() {
-        if (allChannels.length === 0) return;
-        let nextIndex = currentChannelIndex + 1;
-        if (nextIndex >= allChannels.length) nextIndex = 0;
-        playChannel(nextIndex);
-        scrollToActiveChannel(nextIndex);
+        const visibleIndices = getFilteredIndices();
+        if (visibleIndices.length === 0) return;
+
+        let currentVisiblePosition = visibleIndices.indexOf(currentChannelIndex);
+        let nextVisiblePosition = currentVisiblePosition + 1;
+        
+        if (nextVisiblePosition >= visibleIndices.length || currentVisiblePosition === -1) {
+            nextVisiblePosition = 0;
+        }
+
+        const nextOriginalIndex = visibleIndices[nextVisiblePosition];
+        playChannel(nextOriginalIndex);
+        scrollToActiveChannel(nextOriginalIndex);
     }
 
-    // Adjust global channel configuration indices inside sequential loop tracking
     function playPreviousChannel() {
-        if (allChannels.length === 0) return;
-        let prevIndex = currentChannelIndex - 1;
-        if (prevIndex < 0) prevIndex = allChannels.length - 1;
-        playChannel(prevIndex);
-        scrollToActiveChannel(prevIndex);
+        const visibleIndices = getFilteredIndices();
+        if (visibleIndices.length === 0) return;
+
+        let currentVisiblePosition = visibleIndices.indexOf(currentChannelIndex);
+        let prevVisiblePosition = currentVisiblePosition - 1;
+
+        if (prevVisiblePosition < 0 || currentVisiblePosition === -1) {
+            prevVisiblePosition = visibleIndices.length - 1;
+        }
+
+        const prevOriginalIndex = visibleIndices[prevVisiblePosition];
+        playChannel(prevOriginalIndex);
+        scrollToActiveChannel(prevOriginalIndex);
     }
 
     function scrollToActiveChannel(index) {
