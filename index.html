@@ -232,7 +232,9 @@
 
         .footer-note { padding: 10px; text-align: center; font-size: 11px; color: #55555d; border-top: 1px solid var(--border-color); background-color: #0e0e10; }
 
-        /* --- OVERRIDES FOR THE VIDEO PLAYER --- */
+        /* --- CUSTOM OVERRIDES FOR THE VIDEO PLAYER (STREAMLINED STYLE) --- */
+        
+        /* Relocate the control bar container slightly higher and clear default background */
         .video-js .vjs-control-bar {
             background: linear-gradient(transparent, rgba(0,0,0,0.85)) !important;
             height: 60px !important;
@@ -240,6 +242,7 @@
             align-items: center !important;
         }
 
+        /* Thicker progress timeline base layout */
         .video-js .vjs-progress-control {
             position: absolute !important;
             width: 100% !important;
@@ -255,17 +258,33 @@
             border-radius: 4px !important;
         }
 
+        /* Simulating the segmented chapter/breaks layout from the sample image */
+        .video-js .vjs-progress-holder:before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: linear-gradient(to right, transparent 98%, rgba(0, 0, 0, 0.6) 2%);
+            background-size: 12% 100%;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        /* Bold red active play progress bar */
         .video-js .vjs-play-progress {
             background-color: var(--player-accent-red) !important;
             border-radius: 4px !important;
         }
 
+        /* Gray buffered track segment */
         .video-js .vjs-load-progress {
             background: rgba(255, 255, 255, 0.35) !important;
             border-radius: 4px !important;
         }
-        .video-js .vjs-load-progress div { background: transparent !important; }
+        .video-js .vjs-load-progress div {
+            background: transparent !important;
+        }
 
+        /* Large circular Red Scrubber Thumb Knob */
         .video-js .vjs-play-progress:before {
             display: block !important;
             content: "" !important;
@@ -283,6 +302,11 @@
             transition: transform 0.1s ease;
         }
 
+        .video-js .vjs-progress-control:hover .vjs-play-progress:before {
+            transform: scale(1.25);
+        }
+
+        /* Pill styled layout items for metrics matching layout look */
         .video-js .vjs-time-control {
             display: inline-flex !important;
             align-items: center !important;
@@ -293,18 +317,61 @@
             font-size: 13px !important;
             color: #ffffff !important;
             margin: 0 6px !important;
+            min-width: auto !important;
         }
         
-        .video-js .vjs-current-time, .video-js .vjs-duration, .video-js .vjs-time-divider { display: none !important; }
-        .video-js .vjs-remaining-time { display: inline-flex !important; }
-        .video-js .vjs-button > .vjs-icon-placeholder:before { line-height: 60px !important; font-size: 20px !important; }
-        .video-js .vjs-fullscreen-control { margin-left: auto !important; }
+        .video-js .vjs-current-time, 
+        .video-js .vjs-duration, 
+        .video-js .vjs-time-divider {
+            display: none !important; /* Hide defaults to replace with a standard combined module block */
+        }
+        
+        /* Fallback if combined remaining time module is used */
+        .video-js .vjs-remaining-time {
+            display: inline-flex !important;
+        }
+
+        /* Modernize and reposition default icons to standard inline positions */
+        .video-js .vjs-button > .vjs-icon-placeholder:before {
+            line-height: 60px !important;
+            font-size: 20px !important;
+        }
+
+        /* Shift full screen controls to the right flank edge */
+        .video-js .vjs-fullscreen-control {
+            margin-left: auto !important;
+        }
 
         @media (max-width: 992px) {
-            body { overflow-y: auto; height: auto; }
-            .main-layout { flex-direction: column; height: auto; width: 100%; }
-            .video-container { flex: none; width: 100%; aspect-ratio: 16 / 9; height: auto; }
-            .sidebar { width: 100%; border-left: none; border-top: 1px solid var(--border-color); height: calc(100vh - 56.25vw); min-height: 450px; }
+            body {
+                overflow-y: auto;
+                height: auto;
+            }
+            .main-layout {
+                flex-direction: column;
+                height: auto;
+                width: 100%;
+            }
+            .video-container {
+                flex: none;
+                width: 100%;
+                aspect-ratio: 16 / 9;
+                height: auto;
+            }
+            .sidebar {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+                height: calc(100vh - 56.25vw);
+                min-height: 450px;
+            }
+            .player-nav-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+            .player-nav-btn.prev-btn { left: 10px; }
+            .player-nav-btn.next-btn { right: 10px; }
         }
     </style>
 </head>
@@ -350,33 +417,59 @@
 </div>
 
 <script src="https://vjs.zencdn.net/8.10.0/video.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/videojs-contrib-eme@5.3.0/dist/videojs-contrib-eme.min.js"></script>
 
 <script>
-    // --- ANTI-TAMPER SECURITY ---
+    // --- UI PROTECTION CONTROLS ---
     document.addEventListener('contextmenu', event => event.preventDefault());
+
     setInterval(function() {
         if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
             (function() { return false; }['constructor']('debugger')());
         }
     }, 500);
 
-    // --- KEYBOARD MAPPINGS ---
+    // --- GLOBAL KEYBOARD UTILITIES (NAVIGATION & VOLUME) ---
     document.addEventListener('keydown', event => {
-        if (document.activeElement === document.getElementById('search-input')) return;
+        if (document.activeElement === document.getElementById('search-input')) {
+            return;
+        }
+
+        if (
+            event.keyCode === 123 || 
+            (event.ctrlKey && event.shiftKey && event.keyCode === 73) || 
+            (event.ctrlKey && event.shiftKey && event.keyCode === 74) || 
+            (event.ctrlKey && event.keyCode === 85)
+        ) {
+            event.preventDefault();
+            return false;
+        }
+
         if (player) {
             switch(event.key) {
-                case "ArrowUp": event.preventDefault(); playPreviousChannel(); break;
-                case "ArrowDown": event.preventDefault(); playNextChannel(); break;
-                case "ArrowLeft": event.preventDefault(); player.volume(Math.max(0, player.volume() - 0.15)); break;
-                case "ArrowRight": event.preventDefault(); player.volume(Math.min(1, player.volume() + 0.15)); break;
+                case "ArrowUp":
+                    event.preventDefault();
+                    playPreviousChannel();
+                    break;
+                case "ArrowDown":
+                    event.preventDefault();
+                    playNextChannel();
+                    break;
+                case "ArrowLeft":
+                    event.preventDefault();
+                    let currentVolDown = player.volume();
+                    player.volume(Math.max(0, currentVolDown - 0.15));
+                    break;
+                case "ArrowRight":
+                    event.preventDefault();
+                    let currentVolUp = player.volume();
+                    player.volume(Math.min(1, currentVolUp + 0.15));
+                    break;
             }
         }
     });
 
-    // --- MULTI-SOURCE CONFIG (INCLUDING YOUR TOFFEE AUTOMATION REPO) ---
+    // --- PLAYLIST CONFIGURATION ---
     const playlistsConfig = [
-        { name: "Live-Toffee", url: "https://raw.githubusercontent.com/sm-monirulislam/Toffee-Auto-Update-Playlist/refs/heads/main/OTT_Navigator.m3u" },
         { name: "Live-Tapmad", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3NyaGFkeS90YXBtYWQtYmQvcmVmcy9oZWFkcy9tYWluL3RhcG1hZF9iZC5tM3U=") },
         { name: "Free-Live TV", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0ZhaGFka2hhbjQxMC9iZHRlc3QvcmVmcy9oZWFkcy9tYWluL2NoYS5tM3U=") },
         { name: "Live-FIFA 2026", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1pvb20tQWRyL3NjcmFwZXIvcmVmcy9oZWFkcy9tYWluL1Nwb3J0engubTN1OA==") },
@@ -391,7 +484,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         player = videojs('iptv-player');
-        player.eme();
         fetchAllPlaylists(playlistsConfig);
     });
 
@@ -399,23 +491,26 @@
         const fetchPromises = configs.map(config => 
             fetch(config.url)
                 .then(res => res.ok ? res.text() : '')
-                .then(data => { if (data) parseM3U(data, config.name); })
-                .catch(err => console.error('Protected source skipped.'))
+                .then(data => {
+                    if (data) parseM3U(data, config.name);
+                })
+                .catch(err => console.error('Data pipeline exception protected.'))
         );
 
         Promise.all(fetchPromises).then(() => {
             if (allChannels.length === 0) {
-                document.getElementById('channel-list').innerHTML = `<div style="padding:20px; color:#ff4444; font-size:13px;">Failed to initialize tracks.</div>`;
+                document.getElementById('channel-list').innerHTML = `<div style="padding:20px; color:#ff4444; font-size:13px;">Failed to initialize resources.</div>`;
                 return;
             }
+            
             buildPlaylistFilterBar();
             buildGroupFilterBar();
             applyFilters();
+            
             if (allChannels.length > 0) playChannel(0);
         });
     }
 
-    // --- PARSER EXTENDED FOR ADVANCED TOFFEE / KODI NETWORK HEADERS ---
     function parseM3U(data, playlistLabel) {
         const lines = data.split('\n');
         let currentItem = null;
@@ -426,14 +521,12 @@
 
             if (line.startsWith('#EXTINF:')) {
                 currentItem = { 
-                    name: 'Live Channel', 
+                    name: 'Live Stream Channel', 
                     logo: 'https://i.postimg.cc/d3Bxy9ss/sportzx-football-live-tv-hd-logo-removebg-preview.png', 
                     group: 'Uncategorized', 
                     playlistSource: playlistLabel,
                     url: '', 
-                    drmType: 'clearkey',
-                    drmKey: null,
-                    headers: {} // Holds parsed HTTP payload requirements (Cookie, Host, UA)
+                    drmKey: null 
                 };
 
                 const logoMatch = line.match(/tvg-logo="([^"]+)"/i);
@@ -445,28 +538,8 @@
                 const commaIdx = line.indexOf(',');
                 if (commaIdx !== -1) currentItem.name = line.substring(commaIdx + 1).trim();
             } 
-            else if (line.startsWith('#KODIPROP:')) {
-                if (!currentItem) continue;
-                const propContent = line.replace('#KODIPROP:', '').trim();
-                const eqIdx = propContent.indexOf('=');
-                
-                if (eqIdx !== -1) {
-                    const key = propContent.substring(0, eqIdx).trim();
-                    const val = propContent.substring(eqIdx + 1).trim();
-
-                    // Identifies native security parameters inside the M3U
-                    if (key === 'inputstream.adaptive.license_type') {
-                        currentItem.drmType = val.toLowerCase().includes('widevine') ? 'widevine' : 'clearkey';
-                    } 
-                    else if (key === 'inputstream.adaptive.license_key' || key === 'inputstream.adaptive.license_data') {
-                        currentItem.drmKey = val;
-                    }
-                    // Checks if properties are mapping explicit network stream requirements
-                    else if (key.toLowerCase().includes('http_')) {
-                        const headerName = key.replace(/http_/i, '').replace(/_/g, '-');
-                        currentItem.headers[headerName] = val;
-                    }
-                }
+            else if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=')) {
+                if (currentItem) currentItem.drmKey = line.split('=')[1].trim();
             } 
             else if (!line.startsWith('#')) {
                 if (currentItem) {
@@ -481,6 +554,7 @@
     function buildPlaylistFilterBar() {
         const bar = document.getElementById('playlist-bar');
         bar.innerHTML = '<button class="playlist-btn active" id="pl-btn-ALL" onclick="selectPlaylist(\'ALL\')">All Playlists</button>';
+        
         playlistsConfig.forEach(config => {
             const btn = document.createElement('button');
             btn.className = 'playlist-btn';
@@ -493,8 +567,12 @@
 
     function buildGroupFilterBar() {
         const groupBar = document.getElementById('group-bar');
-        const filtered = currentSelectedPlaylist === 'ALL' ? allChannels : allChannels.filter(ch => ch.playlistSource === currentSelectedPlaylist);
-        const categories = ['ALL', ...new Set(filtered.map(ch => ch.group))];
+        
+        const filteredChannels = currentSelectedPlaylist === 'ALL' 
+            ? allChannels 
+            : allChannels.filter(ch => ch.playlistSource === currentSelectedPlaylist);
+
+        const categories = ['ALL', ...new Set(filteredChannels.map(ch => ch.group))];
         
         groupBar.innerHTML = '';
         categories.forEach(cat => {
@@ -509,9 +587,11 @@
     function selectPlaylist(name) {
         currentSelectedPlaylist = name;
         currentSelectedGroup = "ALL"; 
+        
         document.querySelectorAll('.playlist-btn').forEach(btn => btn.classList.remove('active'));
         const activeBtn = document.getElementById(`pl-btn-${name.replace(/\s+/g, '')}`);
         if(activeBtn) activeBtn.classList.add('active');
+
         buildGroupFilterBar();
         applyFilters();
     }
@@ -526,10 +606,13 @@
     function getFilteredIndices() {
         const query = document.getElementById('search-input').value.toLowerCase();
         const indices = [];
+        
         allChannels.forEach((channel, index) => {
-            if ((currentSelectedPlaylist === 'ALL' || channel.playlistSource === currentSelectedPlaylist) &&
-                (currentSelectedGroup === 'ALL' || channel.group === currentSelectedGroup) &&
-                channel.name.toLowerCase().includes(query)) {
+            const matchesPlaylist = (currentSelectedPlaylist === 'ALL' || channel.playlistSource === currentSelectedPlaylist);
+            const matchesGroup = (currentSelectedGroup === 'ALL' || channel.group === currentSelectedGroup);
+            const matchesSearch = channel.name.toLowerCase().includes(query);
+
+            if (matchesPlaylist && matchesGroup && matchesSearch) {
                 indices.push(index);
             }
         });
@@ -542,7 +625,7 @@
         const visibleIndices = getFilteredIndices();
 
         if (visibleIndices.length === 0) {
-            listContainer.innerHTML = `<div style="padding:20px; color:var(--text-secondary); font-size:13px;">No channels found matching properties.</div>`;
+            listContainer.innerHTML = `<div style="padding:20px; color:var(--text-secondary); font-size:13px;">No channels matches filters.</div>`;
             return;
         }
 
@@ -552,6 +635,7 @@
             row.className = `channel-item ${originalIndex === currentChannelIndex ? 'active' : ''}`;
             row.id = `ch-item-${originalIndex}`;
             row.onclick = () => playChannel(originalIndex);
+
             row.innerHTML = `
                 <img class="channel-logo" src="${channel.logo}" onerror="this.src='https://i.postimg.cc/d3Bxy9ss/sportzx-football-live-tv-hd-logo-removebg-preview.png'">
                 <div class="channel-info">
@@ -567,44 +651,42 @@
     }
 
     function playNextChannel() {
-        const visible = getFilteredIndices();
-        if (visible.length === 0) return;
-        let pos = visible.indexOf(currentChannelIndex) + 1;
-        if (pos >= visible.length || pos === 0) pos = 0;
-        playChannel(visible[pos]);
-        scrollToActiveChannel(visible[pos]);
+        const visibleIndices = getFilteredIndices();
+        if (visibleIndices.length === 0) return;
+
+        let currentVisiblePosition = visibleIndices.indexOf(currentChannelIndex);
+        let nextVisiblePosition = currentVisiblePosition + 1;
+        
+        if (nextVisiblePosition >= visibleIndices.length || currentVisiblePosition === -1) {
+            nextVisiblePosition = 0;
+        }
+
+        const nextOriginalIndex = visibleIndices[nextVisiblePosition];
+        playChannel(nextOriginalIndex);
+        scrollToActiveChannel(nextOriginalIndex);
     }
 
     function playPreviousChannel() {
-        const visible = getFilteredIndices();
-        if (visible.length === 0) return;
-        let pos = visible.indexOf(currentChannelIndex) - 1;
-        if (pos < 0) pos = visible.length - 1;
-        playChannel(visible[pos]);
-        scrollToActiveChannel(visible[pos]);
+        const visibleIndices = getFilteredIndices();
+        if (visibleIndices.length === 0) return;
+
+        let currentVisiblePosition = visibleIndices.indexOf(currentChannelIndex);
+        let prevVisiblePosition = currentVisiblePosition - 1;
+
+        if (prevVisiblePosition < 0 || currentVisiblePosition === -1) {
+            prevVisiblePosition = visibleIndices.length - 1;
+        }
+
+        const prevOriginalIndex = visibleIndices[prevVisiblePosition];
+        playChannel(prevOriginalIndex);
+        scrollToActiveChannel(prevOriginalIndex);
     }
 
     function scrollToActiveChannel(index) {
         const element = document.getElementById(`ch-item-${index}`);
-        if (element) element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-
-    function base64UrlFromHex(hexString) {
-        const cleanHex = hexString.trim().replace(/[-]/g, '');
-        const bytes = new Uint8Array(cleanHex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-        let binary = '';
-        for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-        return btoa(binary).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-    }
-
-    function cleanJsonParsing(rawStr) {
-        try {
-            const cleaned = rawStr.trim();
-            if (cleaned.startsWith('{') || cleaned.startsWith('[')) {
-                return JSON.parse(cleaned);
-            }
-        } catch (e) {}
-        return null;
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
     }
 
     function playChannel(index) {
@@ -612,83 +694,39 @@
         if (!channel) return;
 
         currentChannelIndex = index;
+
         document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
         const activeRow = document.getElementById(`ch-item-${index}`);
         if(activeRow) activeRow.classList.add('active');
 
         let type = 'application/x-mpegURL'; 
         let src = channel.url;
-        let emeOptions = undefined;
+        let keySystems = {};
+
         const cleanUrl = src.toLowerCase().split('?')[0]; 
 
         if (cleanUrl.includes('.mpd')) {
             type = 'application/dash+xml';
             
-            if (channel.drmKey) {
-                const jsonKeys = cleanJsonParsing(channel.drmKey);
-                if (jsonKeys) {
-                    if (channel.drmType === 'widevine') {
-                        emeOptions = { keySystems: { 'com.widevine.alpha': { url: src } } };
-                    } else {
-                        let clearkeyMap = {};
-                        let keysArray = jsonKeys.keys || (Array.isArray(jsonKeys) ? jsonKeys : []);
-                        keysArray.forEach(kItem => {
-                            if (kItem.kid && kItem.k) clearkeyMap[kItem.kid] = kItem.k;
-                        });
-                        if (Object.keys(clearkeyMap).length > 0) {
-                            emeOptions = { keySystems: { 'org.w3.clearkey': { clearkey: clearkeyMap } } };
-                        }
-                    }
-                } 
-                else if (channel.drmKey.includes(':')) {
-                    try {
-                        const parts = channel.drmKey.split(':');
-                        const kidB64Url = base64UrlFromHex(parts[0]);
-                        const keyB64Url = base64UrlFromHex(parts[1]);
-                        emeOptions = {
-                            keySystems: {
-                                'org.w3.clearkey': {
-                                    videoRobustness: 'SW_SECURE_DECODE',
-                                    audioRobustness: 'SW_SECURE_DECODE',
-                                    clearkey: { [kidB64Url]: keyB64Url }
-                                }
-                            }
-                        };
-                    } catch(e) { console.error("Key handling tracking skipped safely."); }
-                }
-                else if (channel.drmKey.startsWith('http')) {
-                    const keySys = channel.drmType === 'widevine' ? 'com.widevine.alpha' : 'org.w3.clearkey';
-                    emeOptions = { keySystems: { [keySys]: { url: channel.drmKey } } };
-                }
+            if (channel.drmKey && channel.drmKey.includes(':')) {
+                const parts = channel.drmKey.split(':');
+                const kid = btoa(String.fromCharCode(...parts[0].match(/../g).map(h => parseInt(h, 16)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+                const key = btoa(String.fromCharCode(...parts[1].match(/../g).map(h => parseInt(h, 16)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+                
+                keySystems = {
+                    'org.w3.clearkey': { 'clearkey': { [kid]: key } }
+                };
             }
         } 
         else if (cleanUrl.includes('.mp4')) { type = 'video/mp4'; } 
         else if (cleanUrl.includes('.mkv')) { type = 'video/x-matroska'; } 
-        else if (cleanUrl.includes('.webm')) { type = 'video/webm'; }
+        else if (cleanUrl.includes('.webm')) { type = 'video/webm'; } 
+        else if (cleanUrl.includes('.ogv') || cleanUrl.includes('.ogg')) { type = 'video/ogg'; } 
+        else if (cleanUrl.includes('.mov') || cleanUrl.includes('.avi')) { type = 'video/mp4'; }
 
-        // --- DYNAMIC REQUEST HEADER INTERCEPTOR FOR VIDEOJS / HLS TECH ---
-        const xhrOptions = {};
-        if (channel.headers && Object.keys(channel.headers).length > 0) {
-            xhrOptions.beforeSend = function(xhr) {
-                Object.keys(channel.headers).forEach(headerKey => {
-                    // Inject extracted Toffee authentication values directly into backend player request loops
-                    xhr.setRequestHeader(headerKey, channel.headers[headerKey]);
-                });
-            };
-        }
-
-        player.src({ 
-            src: src, 
-            type: type, 
-            emeOptions: emeOptions,
-            html5: {
-                vhs: { xhrSetup: xhrOptions.beforeSend },
-                hls: { xhrSetup: xhrOptions.beforeSend }
-            }
-        });
-
+        player.src({ src: src, type: type, keySystems: keySystems });
         player.ready(() => {
-            player.play().catch(err => console.log('Playback initialization tracking skipped safely.'));
+            player.play().catch(e => console.log('Autoplay deferred.'));
         });
     }
 </script>
