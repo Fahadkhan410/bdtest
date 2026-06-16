@@ -250,7 +250,7 @@
                 width: 100%;
                 border-left: none;
                 border-top: 1px solid var(--border-color);
-                height: calc(100vh - 56.25vw); /* Calculates viewport space left after 16:9 video */
+                height: calc(100vh - 56.25vw);
                 min-height: 450px;
             }
             .player-nav-btn {
@@ -312,30 +312,61 @@
     // Disable right click context menu
     document.addEventListener('contextmenu', event => event.preventDefault());
 
-    // Disable keyboard shortcuts used to open inspector tools
-    document.addEventListener('keydown', event => {
-        if (
-            event.keyCode === 123 || // F12 key
-            (event.ctrlKey && event.shiftKey && event.keyCode === 73) || // Ctrl+Shift+I
-            (event.ctrlKey && event.shiftKey && event.keyCode === 74) || // Ctrl+Shift+J
-            (event.ctrlKey && event.keyCode === 85) // Ctrl+U (View Source)
-        ) {
-            event.preventDefault();
-            return false;
-        }
-    });
-
     // Anti-debugging loop: Pauses execution if DevTools is opened
     setInterval(function() {
         if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
-            // Evaluates a debugger anchor to stall page behavior when console is open
             (function() { return false; }['constructor']('debugger')());
         }
     }, 500);
 
 
+    // --- GLOBAL KEYBOARD UTILITIES (NAVIGATION & VOLUME) ---
+    document.addEventListener('keydown', event => {
+        // Prevent hotkey overrides when typing inside the channel search box
+        if (document.activeElement === document.getElementById('search-input')) {
+            return;
+        }
+
+        // Handle structural keys for DevTools protection blocks
+        if (
+            event.keyCode === 123 || // F12 key
+            (event.ctrlKey && event.shiftKey && event.keyCode === 73) || // Ctrl+Shift+I
+            (event.ctrlKey && event.shiftKey && event.keyCode === 74) || // Ctrl+Shift+J
+            (event.ctrlKey && event.keyCode === 85) // Ctrl+U
+        ) {
+            event.preventDefault();
+            return false;
+        }
+
+        // Arrow controls wrapper logic
+        if (player) {
+            switch(event.key) {
+                case "ArrowUp":
+                    event.preventDefault();
+                    playPreviousChannel();
+                    break;
+                case "ArrowDown":
+                    event.preventDefault();
+                    playNextChannel();
+                    break;
+                case "ArrowLeft":
+                    event.preventDefault();
+                    // Drop volume by 5% increments, floor at 0
+                    let currentVolDown = player.volume();
+                    player.volume(Math.max(0, currentVolDown - 0.05));
+                    break;
+                case "ArrowRight":
+                    event.preventDefault();
+                    // Raise volume by 5% increments, ceiling at 100%
+                    let currentVolUp = player.volume();
+                    player.volume(Math.min(1, currentVolUp + 0.05));
+                    break;
+            }
+        }
+    });
+
+
     // --- PLAYLIST CONFIGURATION (OBLITERATED VIA BASE64) ---
-    // The URLs are converted back to real addresses in memory during runtime
     const playlistsConfig = [
         { name: "Live-Tapmad", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3NyaGFkeS90YXBtYWQtYmQvcmVmcy9oZWFkcy9tYWluL3RhcG1hZF9iZC5tM3U=") },
         { name: "Free-Live TV", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0ZhaGFka2hhbjQxMC9iZHRlc3QvcmVmcy9oZWFkcy9tYWluL2NoYS5tM3U=") },
@@ -509,7 +540,6 @@
         scrollToActiveChannel(nextIndex);
     }
 
-    // Handles the previous skip trigger behavior
     function playPreviousChannel() {
         if (allChannels.length === 0) return;
         let prevIndex = currentChannelIndex - 1;
