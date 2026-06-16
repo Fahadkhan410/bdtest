@@ -170,6 +170,8 @@
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
+            max-height: 120px;
+            overflow-y: auto;
         }
 
         .group-btn {
@@ -226,6 +228,39 @@
         .tag.src-tag { background-color: #193421; color: #8ad39e; }
 
         .footer-note { padding: 10px; text-align: center; font-size: 11px; color: #55555d; border-top: 1px solid var(--border-color); background-color: #0e0e10; }
+
+        /* --- RESPONSIVE MEDIA QUERIES --- */
+        @media (max-width: 992px) {
+            body {
+                overflow-y: auto;
+                height: auto;
+            }
+            .main-layout {
+                flex-direction: column;
+                height: auto;
+                width: 100%;
+            }
+            .video-container {
+                flex: none;
+                width: 100%;
+                aspect-ratio: 16 / 9;
+                height: auto;
+            }
+            .sidebar {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+                height: calc(100vh - 56.25vw); /* Calculates viewport space left after 16:9 video */
+                min-height: 450px;
+            }
+            .player-nav-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+            .player-nav-btn.prev-btn { left: 10px; }
+            .player-nav-btn.next-btn { right: 10px; }
+        }
     </style>
 </head>
 <body>
