@@ -21,9 +21,9 @@
             --text-secondary: #aaaaaa;
             --border-color: #222226;
             
-            /* Styled from image_d1391d.png */
-            --player-accent: #ff0055;
-            --player-capsule-bg: rgba(255, 255, 255, 0.15);
+            /* Styled Player Theme Variables */
+            --player-accent-red: #ff0033;
+            --player-bg-dim: rgba(255, 255, 255, 0.2);
         }
 
         * {
@@ -63,118 +63,6 @@
             width: 100% !important;
             height: 100% !important;
         }
-
-        /* --- VIDEO.JS MODERN OVERRIDES (image_d1391d.png Style) --- */
-        
-        /* Floating Pill Control Bar */
-        .video-js .vjs-control-bar {
-            background: rgba(0, 0, 0, 0.4) !important;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 50px !important;
-            bottom: 20px !important;
-            left: 20px !important;
-            right: 20px !important;
-            width: calc(100% - 40px) !important;
-            height: 60px !important;
-            align-items: center;
-            padding: 0 15px !important;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        /* Circular Control Buttons */
-        .video-js .vjs-control {
-            width: 44px !important;
-            height: 44px !important;
-            border-radius: 50%;
-            margin: 0 4px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .video-js .vjs-button > .vjs-icon-placeholder:before {
-            line-height: 44px !important;
-        }
-
-        /* Play/Pause & Audio Circle Badges */
-        .video-js .vjs-play-control,
-        .video-js .vjs-volume-panel {
-            background: var(--player-capsule-bg);
-        }
-
-        /* Progress Bar Modern Look */
-        .video-js .vjs-progress-control {
-            position: absolute !important;
-            top: -15px;
-            left: 15px;
-            right: 15px;
-            width: calc(100% - 30px) !important;
-            height: 6px !important;
-        }
-
-        .video-js .vjs-progress-holder {
-            height: 6px !important;
-            border-radius: 3px;
-            background: rgba(255, 255, 255, 0.2) !important;
-        }
-
-        /* Color Polish matching image_d1391d.png */
-        .video-js .vjs-play-progress {
-            background: var(--player-accent) !important;
-            border-radius: 3px;
-        }
-
-        .video-js .vjs-play-progress:before {
-            font-size: 14px !important;
-            top: -4px !important;
-            color: #fff !important;
-        }
-
-        /* Pill Capsules for Time Display */
-        .video-js .vjs-time-control {
-            display: inline-flex !important;
-            align-items: center;
-            background: var(--player-capsule-bg);
-            padding: 0 16px !important;
-            border-radius: 30px;
-            height: 34px !important;
-            line-height: 34px !important;
-            font-size: 13px !important;
-            font-weight: 500;
-            color: #ffffff !important;
-            min-width: auto !important;
-            margin: 0 6px;
-        }
-        
-        /* Custom UI Injection for Title Overlay inside the bar */
-        .vjs-custom-title-pill {
-            display: inline-flex;
-            align-items: center;
-            background: var(--player-capsule-bg);
-            padding: 0 16px;
-            border-radius: 30px;
-            height: 34px;
-            font-size: 13px;
-            max-width: 250px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: #ffffff;
-            margin-left: 6px;
-        }
-
-        /* Adjustments for the Volume layout container */
-        .video-js .vjs-volume-panel {
-            transition: width 0.3s;
-            overflow: hidden;
-        }
-        .video-js .vjs-volume-panel.vjs-volume-panel-horizontal:hover {
-            width: 130px !important;
-            border-radius: 30px !important;
-        }
-
-        /* --- END PLAYER OVERRIDES --- */
 
         .player-nav-btn {
             position: absolute;
@@ -344,6 +232,116 @@
 
         .footer-note { padding: 10px; text-align: center; font-size: 11px; color: #55555d; border-top: 1px solid var(--border-color); background-color: #0e0e10; }
 
+        /* --- CUSTOM OVERRIDES FOR THE VIDEO PLAYER (STREAMLINED STYLE) --- */
+        
+        /* Relocate the control bar container slightly higher and clear default background */
+        .video-js .vjs-control-bar {
+            background: linear-gradient(transparent, rgba(0,0,0,0.85)) !important;
+            height: 60px !important;
+            padding: 0 15px !important;
+            align-items: center !important;
+        }
+
+        /* Thicker progress timeline base layout */
+        .video-js .vjs-progress-control {
+            position: absolute !important;
+            width: 100% !important;
+            height: 8px !important;
+            top: -8px !important;
+            left: 0 !important;
+        }
+
+        .video-js .vjs-progress-holder {
+            height: 8px !important;
+            margin: 0 !important;
+            background-color: rgba(255, 255, 255, 0.15) !important;
+            border-radius: 4px !important;
+        }
+
+        /* Simulating the segmented chapter/breaks layout from the sample image */
+        .video-js .vjs-progress-holder:before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: linear-gradient(to right, transparent 98%, rgba(0, 0, 0, 0.6) 2%);
+            background-size: 12% 100%;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        /* Bold red active play progress bar */
+        .video-js .vjs-play-progress {
+            background-color: var(--player-accent-red) !important;
+            border-radius: 4px !important;
+        }
+
+        /* Gray buffered track segment */
+        .video-js .vjs-load-progress {
+            background: rgba(255, 255, 255, 0.35) !important;
+            border-radius: 4px !important;
+        }
+        .video-js .vjs-load-progress div {
+            background: transparent !important;
+        }
+
+        /* Large circular Red Scrubber Thumb Knob */
+        .video-js .vjs-play-progress:before {
+            display: block !important;
+            content: "" !important;
+            position: absolute !important;
+            right: -8px !important;
+            top: -4px !important;
+            width: 16px !important;
+            height: 16px !important;
+            background: var(--player-accent-red) !important;
+            border-radius: 50% !important;
+            box-shadow: 0 0 8px rgba(0,0,0,0.5) !important;
+            font-size: 0 !important;
+            z-index: 10 !important;
+            transform: scale(1);
+            transition: transform 0.1s ease;
+        }
+
+        .video-js .vjs-progress-control:hover .vjs-play-progress:before {
+            transform: scale(1.25);
+        }
+
+        /* Pill styled layout items for metrics matching layout look */
+        .video-js .vjs-time-control {
+            display: inline-flex !important;
+            align-items: center !important;
+            background: rgba(255, 255, 255, 0.12) !important;
+            padding: 4px 12px !important;
+            border-radius: 20px !important;
+            height: 28px !important;
+            font-size: 13px !important;
+            color: #ffffff !important;
+            margin: 0 6px !important;
+            min-width: auto !important;
+        }
+        
+        .video-js .vjs-current-time, 
+        .video-js .vjs-duration, 
+        .video-js .vjs-time-divider {
+            display: none !important; /* Hide defaults to replace with a standard combined module block */
+        }
+        
+        /* Fallback if combined remaining time module is used */
+        .video-js .vjs-remaining-time {
+            display: inline-flex !important;
+        }
+
+        /* Modernize and reposition default icons to standard inline positions */
+        .video-js .vjs-button > .vjs-icon-placeholder:before {
+            line-height: 60px !important;
+            font-size: 20px !important;
+        }
+
+        /* Shift full screen controls to the right flank edge */
+        .video-js .vjs-fullscreen-control {
+            margin-left: auto !important;
+        }
+
         @media (max-width: 992px) {
             body {
                 overflow-y: auto;
@@ -374,13 +372,6 @@
             }
             .player-nav-btn.prev-btn { left: 10px; }
             .player-nav-btn.next-btn { right: 10px; }
-            
-            .video-js .vjs-control-bar {
-                bottom: 10px !important;
-                left: 10px !important;
-                right: 10px !important;
-                width: calc(100% - 20px) !important;
-            }
         }
     </style>
 </head>
@@ -482,7 +473,7 @@
         { name: "Live-Tapmad", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3NyaGFkeS90YXBtYWQtYmQvcmVmcy9oZWFkcy9tYWluL3RhcG1hZF9iZC5tM3U=") },
         { name: "Free-Live TV", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0ZhaGFka2hhbjQxMC9iZHRlc3QvcmVmcy9oZWFkcy9tYWluL2NoYS5tM3U=") },
         { name: "Live-FIFA 2026", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1pvb20tQWRyL3NjcmFwZXIvcmVmcy9oZWFkcy9tYWluL1Nwb3J0engubTN1OA==") },
-        { name: "Movies-VOD", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2tvbmFuZGEtc2cvSVBUVl9lZGlieTc1MjMwMTcvcmVmcy9oZWFkcy9tYWluL0luZGlhblZPRA==") }
+        { name: "Movies-VOD", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2tvbmFuZGEtc2cvSVBUVl9lZGlleTc1MjMwMTcvcmVmcy9oZWFkcy9tYWluL0luZGlhblZPRA==") }
     ];
 
     let player;
@@ -490,32 +481,9 @@
     let currentChannelIndex = 0;
     let currentSelectedPlaylist = "ALL";
     let currentSelectedGroup = "ALL";
-    let titlePillElement = null;
 
     document.addEventListener('DOMContentLoaded', () => {
-        player = videojs('iptv-player', {
-            controlBar: {
-                // Ensure default layouts don't stack awkwardly with custom floating bar
-                remainingTimeDisplay: false 
-            }
-        });
-        
-        player.ready(() => {
-            // Build the title capsule element dynamically inside the control bar wrapper layout
-            const controlBar = player.controlBar.el();
-            titlePillElement = document.createElement('div');
-            titlePillElement.className = 'vjs-custom-title-pill';
-            titlePillElement.style.display = 'none'; // Hide by default until content loads
-            
-            // Insert it elegantly right after the time displays
-            const timeDisplay = controlBar.querySelector('.vjs-time-control');
-            if (timeDisplay) {
-                timeDisplay.parentNode.insertBefore(titlePillElement, timeDisplay.nextSibling);
-            } else {
-                controlBar.appendChild(titlePillElement);
-            }
-        });
-
+        player = videojs('iptv-player');
         fetchAllPlaylists(playlistsConfig);
     });
 
@@ -730,12 +698,6 @@
         document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
         const activeRow = document.getElementById(`ch-item-${index}`);
         if(activeRow) activeRow.classList.add('active');
-
-        // Dynamically update metadata string inside the new controls pill layer
-        if (titlePillElement) {
-            titlePillElement.textContent = channel.name;
-            titlePillElement.style.display = 'inline-flex';
-        }
 
         let type = 'application/x-mpegURL'; 
         let src = channel.url;
