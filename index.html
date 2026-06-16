@@ -124,47 +124,6 @@
 
         .search-input:focus { border-color: var(--accent-blue); }
 
-        /* Custom Network URL Input Section */
-        .url-loader-section {
-            padding: 12px 15px;
-            background-color: #141417;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .url-input-container {
-            display: flex;
-            gap: 6px;
-        }
-
-        .url-input {
-            flex: 1;
-            padding: 8px 12px;
-            background-color: #1a1a1e;
-            border: 1px solid #33333a;
-            color: var(--text-main);
-            border-radius: 4px;
-            font-size: 12px;
-            outline: none;
-        }
-
-        .url-input:focus { border-color: var(--accent-blue); }
-
-        .url-btn {
-            background-color: var(--accent-blue);
-            color: #fff;
-            border: none;
-            padding: 0 14px;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-weight: 500;
-        }
-
-        .url-btn:hover {
-            background-color: #005a9e;
-        }
-
         .playlist-filter-section {
             padding: 12px 15px;
             background-color: #101012;
@@ -184,8 +143,6 @@
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
-            max-height: 100px;
-            overflow-y: auto;
         }
         
         .playlist-btn {
@@ -275,7 +232,7 @@
 
         .footer-note { padding: 10px; text-align: center; font-size: 11px; color: #55555d; border-top: 1px solid var(--border-color); background-color: #0e0e10; }
 
-        /* --- CUSTOM OVERRIDES FOR THE VIDEO PLAYER (STREAMLINED STYLE) --- */
+        /* --- CUSTOM OVERRIDES FOR THE VIDEO PLAYER --- */
         .video-js .vjs-control-bar {
             background: linear-gradient(transparent, rgba(0,0,0,0.85)) !important;
             height: 60px !important;
@@ -425,14 +382,6 @@
             <input type="text" id="search-input" class="search-input" placeholder="Search across all channels & VOD..." oninput="applyFilters()">
         </div>
 
-        <div class="url-loader-section">
-            <div class="section-label">Load Network Stream URL</div>
-            <div class="url-input-container">
-                <input type="text" id="network-url-input" class="url-input" placeholder="Paste .m3u / .m3u8 link here...">
-                <button class="url-btn" onclick="loadNetworkPlaylist()">Load</button>
-            </div>
-        </div>
-
         <div class="playlist-filter-section">
             <div class="section-label">Select M3U Playlist File</div>
             <div id="playlist-bar" class="playlist-bar">
@@ -470,8 +419,7 @@
 
     // --- GLOBAL KEYBOARD UTILITIES (NAVIGATION & VOLUME) ---
     document.addEventListener('keydown', event => {
-        if (document.activeElement === document.getElementById('search-input') || 
-            document.activeElement === document.getElementById('network-url-input')) {
+        if (document.activeElement === document.getElementById('search-input')) {
             return;
         }
 
@@ -539,66 +487,20 @@
         );
 
         Promise.all(fetchPromises).then(() => {
-            refreshUIElements();
+            if (allChannels.length === 0) {
+                document.getElementById('channel-list').innerHTML = `<div style="padding:20px; color:#ff4444; font-size:13px;">Failed to initialize resources.</div>`;
+                return;
+            }
+            
+            buildPlaylistFilterBar();
+            buildGroupFilterBar();
+            applyFilters();
+            
             if (allChannels.length > 0) playChannel(0);
         });
     }
 
-    // Function handler to inject custom web network playlists dynamically
-    function loadNetworkPlaylist() {
-        const urlInput = document.getElementById('network-url-input');
-        const url = urlInput.value.trim();
-        
-        if (!url) {
-            alert("Please enter a valid M3U stream URL address.");
-            return;
-        }
-
-        // Generate a recognizable custom source name label
-        const customName = "Network-Src-" + (playlistsConfig.length - 3);
-        
-        document.getElementById('channel-list').innerHTML = `<div style="padding:20px; color:var(--text-secondary); font-size:13px;">Fetching dynamic network resource...</div>`;
-        
-        fetch(url)
-            .then(res => {
-                if (!res.ok) throw new Error("Network configuration failed to reply.");
-                return res.text();
-            })
-            .then(data => {
-                if (!data) {
-                    alert("Empty response received from playlist provider resource link.");
-                    applyFilters();
-                    return;
-                }
-                
-                // Add to internal list and execute parse routines
-                playlistsConfig.push({ name: customName, url: url });
-                parseM3U(data, customName);
-                
-                refreshUIElements();
-                urlInput.value = '';
-                
-                // Jump selection automatically to focus on the newly imported list parameters
-                selectPlaylist(customName);
-                alert(`Successfully parsed custom network playlist: ${customName}`);
-            })
-            .catch(err => {
-                console.error(err);
-                alert("Failed to load or parse network playlist. Ensure CORS headers permit resource reading.");
-                applyFilters();
-            });
-    }
-
-    function refreshUIElements() {
-        if (allChannels.length === 0) {
-            document.getElementById('channel-list').innerHTML = `<div style="padding:20px; color:#ff4444; font-size:13px;">Failed to initialize resources.</div>`;
-            return;
-        }
-        buildPlaylistFilterBar();
-        buildGroupFilterBar();
-        applyFilters();
-    }
-
+    // Comprehensive Extended Kodi-support structural parsing engine
     function parseM3U(data, playlistLabel) {
         const lines = data.split('\n');
         let currentItem = null;
@@ -607,7 +509,8 @@
             let line = lines[i].trim();
             if (!line) continue;
 
-            if (line.startsWith('#EXTINF:')) {
+            // Catch standard or specialized Kodi structure headers
+            if (line.startsWith('#EXTINF:') || line.startsWith('#EXTMYPORTAL:')) {
                 currentItem = { 
                     name: 'Live Stream Channel', 
                     logo: 'https://i.postimg.cc/d3Bxy9ss/sportzx-football-live-tv-hd-logo-removebg-preview.png', 
@@ -617,18 +520,23 @@
                     drmKey: null 
                 };
 
-                const logoMatch = line.match(/tvg-logo="([^"]+)"/i);
+                const logoMatch = line.match(/tvg-logo="([^"]+)"/i) || line.match(/logo="([^"]+)"/i);
                 if (logoMatch) currentItem.logo = logoMatch[1];
 
-                const groupMatch = line.match(/group-title="([^"]+)"/i);
+                const groupMatch = line.match(/group-title="([^"]+)"/i) || line.match(/group="([^"]+)"/i);
                 if (groupMatch) currentItem.group = groupMatch[1];
 
                 const commaIdx = line.indexOf(',');
                 if (commaIdx !== -1) currentItem.name = line.substring(commaIdx + 1).trim();
             } 
-            else if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=')) {
-                if (currentItem) currentItem.drmKey = line.split('=')[1].trim();
+            // Handles both adaptive clear keys and Kodi pipeline inputstream adaptive flags
+            else if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=') || line.startsWith('#EXT-X-KEY:')) {
+                if (currentItem) {
+                    const valueIdx = line.indexOf('=');
+                    if(valueIdx !== -1) currentItem.drmKey = line.substring(valueIdx + 1).trim();
+                }
             } 
+            // Filter option fields out to capture the direct stream pathway link location safely
             else if (!line.startsWith('#')) {
                 if (currentItem) {
                     currentItem.url = line;
@@ -641,11 +549,11 @@
 
     function buildPlaylistFilterBar() {
         const bar = document.getElementById('playlist-bar');
-        bar.innerHTML = '<button class="playlist-btn ' + (currentSelectedPlaylist === "ALL" ? "active" : "") + '" id="pl-btn-ALL" onclick="selectPlaylist(\'ALL\')">All Playlists</button>';
+        bar.innerHTML = '<button class="playlist-btn active" id="pl-btn-ALL" onclick="selectPlaylist(\'ALL\')">All Playlists</button>';
         
         playlistsConfig.forEach(config => {
             const btn = document.createElement('button');
-            btn.className = `playlist-btn ${config.name === currentSelectedPlaylist ? 'active' : ''}`;
+            btn.className = 'playlist-btn';
             btn.id = `pl-btn-${config.name.replace(/\s+/g, '')}`;
             btn.textContent = config.name;
             btn.onclick = () => selectPlaylist(config.name);
@@ -787,7 +695,8 @@
         const activeRow = document.getElementById(`ch-item-${index}`);
         if(activeRow) activeRow.classList.add('active');
 
-        let type = 'application/x-mpegURL'; 
+        // Extended Kodi & custom link type resolution engine
+        let type = 'application/x-mpegURL'; // Robust M3U8/HLS fallback initialization base
         let src = channel.url;
         let keySystems = {};
 
