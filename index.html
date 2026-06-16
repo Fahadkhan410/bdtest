@@ -7,7 +7,6 @@
     
     <link rel="icon" type="image/png" href="https://i.postimg.cc/SRgsPFyg/image.png">
     
-    <!-- Video.js Stylesheets -->
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <link href="https://unpkg.com/@videojs/themes@1.0.1/dist/city/index.css" rel="stylesheet">
     
@@ -233,7 +232,9 @@
 
         .footer-note { padding: 10px; text-align: center; font-size: 11px; color: #55555d; border-top: 1px solid var(--border-color); background-color: #0e0e10; }
 
-        /* --- CUSTOM OVERRIDES FOR THE VIDEO PLAYER --- */
+        /* --- CUSTOM OVERRIDES FOR THE VIDEO PLAYER (STREAMLINED STYLE) --- */
+        
+        /* Relocate the control bar container slightly higher and clear default background */
         .video-js .vjs-control-bar {
             background: linear-gradient(transparent, rgba(0,0,0,0.85)) !important;
             height: 60px !important;
@@ -241,6 +242,7 @@
             align-items: center !important;
         }
 
+        /* Thicker progress timeline base layout */
         .video-js .vjs-progress-control {
             position: absolute !important;
             width: 100% !important;
@@ -256,6 +258,7 @@
             border-radius: 4px !important;
         }
 
+        /* Simulating the segmented chapter/breaks layout from the sample image */
         .video-js .vjs-progress-holder:before {
             content: "";
             position: absolute;
@@ -266,11 +269,13 @@
             pointer-events: none;
         }
 
+        /* Bold red active play progress bar */
         .video-js .vjs-play-progress {
             background-color: var(--player-accent-red) !important;
             border-radius: 4px !important;
         }
 
+        /* Gray buffered track segment */
         .video-js .vjs-load-progress {
             background: rgba(255, 255, 255, 0.35) !important;
             border-radius: 4px !important;
@@ -279,6 +284,7 @@
             background: transparent !important;
         }
 
+        /* Large circular Red Scrubber Thumb Knob */
         .video-js .vjs-play-progress:before {
             display: block !important;
             content: "" !important;
@@ -300,6 +306,7 @@
             transform: scale(1.25);
         }
 
+        /* Pill styled layout items for metrics matching layout look */
         .video-js .vjs-time-control {
             display: inline-flex !important;
             align-items: center !important;
@@ -316,18 +323,21 @@
         .video-js .vjs-current-time, 
         .video-js .vjs-duration, 
         .video-js .vjs-time-divider {
-            display: none !important;
+            display: none !important; /* Hide defaults to replace with a standard combined module block */
         }
         
+        /* Fallback if combined remaining time module is used */
         .video-js .vjs-remaining-time {
             display: inline-flex !important;
         }
 
+        /* Modernize and reposition default icons to standard inline positions */
         .video-js .vjs-button > .vjs-icon-placeholder:before {
             line-height: 60px !important;
             font-size: 20px !important;
         }
 
+        /* Shift full screen controls to the right flank edge */
         .video-js .vjs-fullscreen-control {
             margin-left: auto !important;
         }
@@ -406,10 +416,7 @@
 
 </div>
 
-<!-- Core Video.js Engine -->
 <script src="https://vjs.zencdn.net/8.10.0/video.js"></script>
-<!-- EME DRM Decryption Helper Plugin -->
-<script src="https://cdn.jsdelivr.net/npm/videojs-contrib-eme@5.3.0/dist/videojs-contrib-eme.min.js"></script>
 
 <script>
     // --- UI PROTECTION CONTROLS ---
@@ -476,18 +483,7 @@
     let currentSelectedGroup = "ALL";
 
     document.addEventListener('DOMContentLoaded', () => {
-        // Initialize player with built-in HLS/Dash configurations
-        player = videojs('iptv-player', {
-            html5: {
-                vhs: { overrideNative: true },
-                nativeAudioTracks: false,
-                nativeVideoTracks: false
-            }
-        });
-        
-        // Initialize the EME DRM decryption plugin
-        player.eme();
-        
+        player = videojs('iptv-player');
         fetchAllPlaylists(playlistsConfig);
     });
 
@@ -523,36 +519,27 @@
             let line = lines[i].trim();
             if (!line) continue;
 
-            if (line.startsWith('#EXTINF:') || line.startsWith('#EXTMYPORTAL:')) {
+            if (line.startsWith('#EXTINF:')) {
                 currentItem = { 
                     name: 'Live Stream Channel', 
                     logo: 'https://i.postimg.cc/d3Bxy9ss/sportzx-football-live-tv-hd-logo-removebg-preview.png', 
                     group: 'Uncategorized', 
                     playlistSource: playlistLabel,
                     url: '', 
-                    drmKey: null,
-                    drmType: null
+                    drmKey: null 
                 };
 
-                const logoMatch = line.match(/tvg-logo="([^"]+)"/i) || line.match(/logo="([^"]+)"/i);
+                const logoMatch = line.match(/tvg-logo="([^"]+)"/i);
                 if (logoMatch) currentItem.logo = logoMatch[1];
 
-                const groupMatch = line.match(/group-title="([^"]+)"/i) || line.match(/group="([^"]+)"/i);
+                const groupMatch = line.match(/group-title="([^"]+)"/i);
                 if (groupMatch) currentItem.group = groupMatch[1];
 
                 const commaIdx = line.indexOf(',');
                 if (commaIdx !== -1) currentItem.name = line.substring(commaIdx + 1).trim();
             } 
-            else if (line.startsWith('#KODIPROP:inputstream.adaptive.license_type=')) {
-                if (currentItem) {
-                    currentItem.drmType = line.split('=')[1].trim();
-                }
-            }
-            else if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=') || line.startsWith('#EXT-X-KEY:')) {
-                if (currentItem) {
-                    const valueIdx = line.indexOf('=');
-                    if(valueIdx !== -1) currentItem.drmKey = line.substring(valueIdx + 1).trim();
-                }
+            else if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=')) {
+                if (currentItem) currentItem.drmKey = line.split('=')[1].trim();
             } 
             else if (!line.startsWith('#')) {
                 if (currentItem) {
@@ -714,41 +701,21 @@
 
         let type = 'application/x-mpegURL'; 
         let src = channel.url;
-        let emeOptions = null;
+        let keySystems = {};
 
         const cleanUrl = src.toLowerCase().split('?')[0]; 
 
         if (cleanUrl.includes('.mpd')) {
             type = 'application/dash+xml';
             
-            if (channel.drmKey) {
-                if (channel.drmKey.includes(':')) {
-                    // Formulate structured clear-key object mappings
-                    const parts = channel.drmKey.split(':');
-                    const kid = btoa(String.fromCharCode(...parts[0].match(/../g).map(h => parseInt(h, 16)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-                    const key = btoa(String.fromCharCode(...parts[1].match(/../g).map(h => parseInt(h, 16)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-                    
-                    emeOptions = {
-                        keySystems: {
-                            'org.w3.clearkey': {
-                                audio: true,
-                                video: true,
-                                clearkey: { [kid]: key }
-                            }
-                        }
-                    };
-                } else {
-                    // Widevine Server endpoints setup
-                    const drmSystem = (channel.drmType && channel.drmType.includes('widevine')) 
-                        ? 'com.widevine.alpha' 
-                        : 'org.w3.clearkey';
-                        
-                    emeOptions = {
-                        keySystems: {
-                            [drmSystem]: { src: channel.drmKey }
-                        }
-                    };
-                }
+            if (channel.drmKey && channel.drmKey.includes(':')) {
+                const parts = channel.drmKey.split(':');
+                const kid = btoa(String.fromCharCode(...parts[0].match(/../g).map(h => parseInt(h, 16)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+                const key = btoa(String.fromCharCode(...parts[1].match(/../g).map(h => parseInt(h, 16)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+                
+                keySystems = {
+                    'org.w3.clearkey': { 'clearkey': { [kid]: key } }
+                };
             }
         } 
         else if (cleanUrl.includes('.mp4')) { type = 'video/mp4'; } 
@@ -757,21 +724,9 @@
         else if (cleanUrl.includes('.ogv') || cleanUrl.includes('.ogg')) { type = 'video/ogg'; } 
         else if (cleanUrl.includes('.mov') || cleanUrl.includes('.avi')) { type = 'video/mp4'; }
 
-        // Clean out previous states to prevent playback freeze exceptions
-        player.reset();
-        
-        // Re-inject the modern layout styling variables
-        player.addClass('vjs-theme-city');
-
-        if (emeOptions) {
-            // Apply EME headers context dynamically before loading our source configuration
-            player.src({ src: src, type: type, emeOptions: emeOptions });
-        } else {
-            player.src({ src: src, type: type });
-        }
-
+        player.src({ src: src, type: type, keySystems: keySystems });
         player.ready(() => {
-            player.play().catch(e => console.log('Autoplay deferred or resource structure blocked by remote peer.'));
+            player.play().catch(e => console.log('Autoplay deferred.'));
         });
     }
 </script>
