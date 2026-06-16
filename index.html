@@ -232,7 +232,9 @@
 
         .footer-note { padding: 10px; text-align: center; font-size: 11px; color: #55555d; border-top: 1px solid var(--border-color); background-color: #0e0e10; }
 
-        /* --- CUSTOM OVERRIDES FOR THE VIDEO PLAYER --- */
+        /* --- CUSTOM OVERRIDES FOR THE VIDEO PLAYER (STREAMLINED STYLE) --- */
+        
+        /* Relocate the control bar container slightly higher and clear default background */
         .video-js .vjs-control-bar {
             background: linear-gradient(transparent, rgba(0,0,0,0.85)) !important;
             height: 60px !important;
@@ -240,6 +242,7 @@
             align-items: center !important;
         }
 
+        /* Thicker progress timeline base layout */
         .video-js .vjs-progress-control {
             position: absolute !important;
             width: 100% !important;
@@ -255,6 +258,7 @@
             border-radius: 4px !important;
         }
 
+        /* Simulating the segmented chapter/breaks layout from the sample image */
         .video-js .vjs-progress-holder:before {
             content: "";
             position: absolute;
@@ -265,11 +269,13 @@
             pointer-events: none;
         }
 
+        /* Bold red active play progress bar */
         .video-js .vjs-play-progress {
             background-color: var(--player-accent-red) !important;
             border-radius: 4px !important;
         }
 
+        /* Gray buffered track segment */
         .video-js .vjs-load-progress {
             background: rgba(255, 255, 255, 0.35) !important;
             border-radius: 4px !important;
@@ -278,6 +284,7 @@
             background: transparent !important;
         }
 
+        /* Large circular Red Scrubber Thumb Knob */
         .video-js .vjs-play-progress:before {
             display: block !important;
             content: "" !important;
@@ -299,6 +306,7 @@
             transform: scale(1.25);
         }
 
+        /* Pill styled layout items for metrics matching layout look */
         .video-js .vjs-time-control {
             display: inline-flex !important;
             align-items: center !important;
@@ -315,18 +323,21 @@
         .video-js .vjs-current-time, 
         .video-js .vjs-duration, 
         .video-js .vjs-time-divider {
-            display: none !important;
+            display: none !important; /* Hide defaults to replace with a standard combined module block */
         }
         
+        /* Fallback if combined remaining time module is used */
         .video-js .vjs-remaining-time {
             display: inline-flex !important;
         }
 
+        /* Modernize and reposition default icons to standard inline positions */
         .video-js .vjs-button > .vjs-icon-placeholder:before {
             line-height: 60px !important;
             font-size: 20px !important;
         }
 
+        /* Shift full screen controls to the right flank edge */
         .video-js .vjs-fullscreen-control {
             margin-left: auto !important;
         }
@@ -406,7 +417,6 @@
 </div>
 
 <script src="https://vjs.zencdn.net/8.10.0/video.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/videojs-contrib-eme@5.4.1/dist/videojs-contrib-eme.min.js"></script>
 
 <script>
     // --- UI PROTECTION CONTROLS ---
@@ -463,7 +473,7 @@
         { name: "Live-Tapmad", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3NyaGFkeS90YXBtYWQtYmQvcmVmcy9oZWFkcy9tYWluL3RhcG1hZF9iZC5tM3U=") },
         { name: "Free-Live TV", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0ZhaGFka2hhbjQxMC9iZHRlc3QvcmVmcy9oZWFkcy9tYWluL2NoYS5tM3U=") },
         { name: "Live-FIFA 2026", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1pvb20tQWRyL3NjcmFwZXIvcmVmcy9oZWFkcy9tYWluL1Nwb3J0engubTN1OA==") },
-        { name: "Movies-VOD", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2tvbmFuZGEtc2cvSVBUVl9lZGlieTc1MjMwMTcvcmVmcy9oZWFkcy9tYWluL0luZGlhblZPRA==") }
+        { name: "Movies-VOD", url: atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2tvbmFuZGEtc2cvSVBUVl9lZGlleTc1MjMwMTcvcmVmcy9oZWFkcy9tYWluL0luZGlhblZPRA==") }
     ];
 
     let player;
@@ -474,8 +484,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         player = videojs('iptv-player');
-        // Initialize the EME protection layer handling interface
-        player.eme();
         fetchAllPlaylists(playlistsConfig);
     });
 
@@ -693,7 +701,7 @@
 
         let type = 'application/x-mpegURL'; 
         let src = channel.url;
-        let emeOptions = undefined;
+        let keySystems = {};
 
         const cleanUrl = src.toLowerCase().split('?')[0]; 
 
@@ -702,19 +710,11 @@
             
             if (channel.drmKey && channel.drmKey.includes(':')) {
                 const parts = channel.drmKey.split(':');
-                // Format the hex Key ID and Key strings to standard base64 strings
                 const kid = btoa(String.fromCharCode(...parts[0].match(/../g).map(h => parseInt(h, 16)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
                 const key = btoa(String.fromCharCode(...parts[1].match(/../g).map(h => parseInt(h, 16)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
                 
-                // Configure structural payload object expected by videojs-contrib-eme plugin
-                emeOptions = {
-                    keySystems: {
-                        'org.w3.clearkey': {
-                            clearkey: {
-                                [kid]: key
-                            }
-                        }
-                    }
+                keySystems = {
+                    'org.w3.clearkey': { 'clearkey': { [kid]: key } }
                 };
             }
         } 
@@ -724,13 +724,7 @@
         else if (cleanUrl.includes('.ogv') || cleanUrl.includes('.ogg')) { type = 'video/ogg'; } 
         else if (cleanUrl.includes('.mov') || cleanUrl.includes('.avi')) { type = 'video/mp4'; }
 
-        // Load content using source options object mapping
-        player.src({ 
-            src: src, 
-            type: type, 
-            emeOptions: emeOptions 
-        });
-        
+        player.src({ src: src, type: type, keySystems: keySystems });
         player.ready(() => {
             player.play().catch(e => console.log('Autoplay deferred.'));
         });
