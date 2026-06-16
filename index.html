@@ -500,7 +500,7 @@
         });
     }
 
-    // Comprehensive Extended Kodi-support structural parsing engine
+    // Advanced M3U parser implementing adaptive Kodi license properties
     function parseM3U(data, playlistLabel) {
         const lines = data.split('\n');
         let currentItem = null;
@@ -509,7 +509,6 @@
             let line = lines[i].trim();
             if (!line) continue;
 
-            // Catch standard or specialized Kodi structure headers
             if (line.startsWith('#EXTINF:') || line.startsWith('#EXTMYPORTAL:')) {
                 currentItem = { 
                     name: 'Live Stream Channel', 
@@ -517,7 +516,8 @@
                     group: 'Uncategorized', 
                     playlistSource: playlistLabel,
                     url: '', 
-                    drmKey: null 
+                    drmKey: null,
+                    drmType: null
                 };
 
                 const logoMatch = line.match(/tvg-logo="([^"]+)"/i) || line.match(/logo="([^"]+)"/i);
@@ -529,14 +529,19 @@
                 const commaIdx = line.indexOf(',');
                 if (commaIdx !== -1) currentItem.name = line.substring(commaIdx + 1).trim();
             } 
-            // Handles both adaptive clear keys and Kodi pipeline inputstream adaptive flags
+            // Captures license types (e.g., clearkey, com.widevine.alpha)
+            else if (line.startsWith('#KODIPROP:inputstream.adaptive.license_type=')) {
+                if (currentItem) {
+                    currentItem.drmType = line.split('=')[1].trim();
+                }
+            }
+            // Captures corresponding structural keys/tokens
             else if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=') || line.startsWith('#EXT-X-KEY:')) {
                 if (currentItem) {
                     const valueIdx = line.indexOf('=');
                     if(valueIdx !== -1) currentItem.drmKey = line.substring(valueIdx + 1).trim();
                 }
             } 
-            // Filter option fields out to capture the direct stream pathway link location safely
             else if (!line.startsWith('#')) {
                 if (currentItem) {
                     currentItem.url = line;
@@ -695,8 +700,7 @@
         const activeRow = document.getElementById(`ch-item-${index}`);
         if(activeRow) activeRow.classList.add('active');
 
-        // Extended Kodi & custom link type resolution engine
-        let type = 'application/x-mpegURL'; // Robust M3U8/HLS fallback initialization base
+        let type = 'application/x-mpegURL'; 
         let src = channel.url;
         let keySystems = {};
 
@@ -705,14 +709,24 @@
         if (cleanUrl.includes('.mpd')) {
             type = 'application/dash+xml';
             
-            if (channel.drmKey && channel.drmKey.includes(':')) {
-                const parts = channel.drmKey.split(':');
-                const kid = btoa(String.fromCharCode(...parts[0].match(/../g).map(h => parseInt(h, 16)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-                const key = btoa(String.fromCharCode(...parts[1].match(/../g).map(h => parseInt(h, 16)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-                
-                keySystems = {
-                    'org.w3.clearkey': { 'clearkey': { [kid]: key } }
-                };
+            if (channel.drmKey) {
+                // Resolve Clearkey or standard string pairings
+                if (channel.drmKey.includes(':')) {
+                    const parts = channel.drmKey.split(':');
+                    const kid = btoa(String.fromCharCode(...parts[0].match(/../g).map(h => parseInt(h, 16)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+                    const key = btoa(String.fromCharCode(...parts[1].match(/../g).map(h => parseInt(h, 16)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+                    
+                    keySystems = {
+                        'org.w3.clearkey': { 'clearkey': { [kid]: key } }
+                    };
+                } else {
+                    // Handles Widevine server urls explicitly provided inside license_key configuration
+                    const drmSystem = (channel.drmType && channel.drmType.includes('widevine')) 
+                        ? 'com.widevine.alpha' 
+                        : 'org.w3.clearkey';
+                        
+                    keySystems = { [drmSystem]: { serverURL: channel.drmKey } };
+                }
             }
         } 
         else if (cleanUrl.includes('.mp4')) { type = 'video/mp4'; } 
