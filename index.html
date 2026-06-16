@@ -233,8 +233,6 @@
         .footer-note { padding: 10px; text-align: center; font-size: 11px; color: #55555d; border-top: 1px solid var(--border-color); background-color: #0e0e10; }
 
         /* --- CUSTOM OVERRIDES FOR THE VIDEO PLAYER (STREAMLINED STYLE) --- */
-        
-        /* Relocate the control bar container slightly higher and clear default background */
         .video-js .vjs-control-bar {
             background: linear-gradient(transparent, rgba(0,0,0,0.85)) !important;
             height: 60px !important;
@@ -242,7 +240,6 @@
             align-items: center !important;
         }
 
-        /* Thicker progress timeline base layout */
         .video-js .vjs-progress-control {
             position: absolute !important;
             width: 100% !important;
@@ -258,7 +255,6 @@
             border-radius: 4px !important;
         }
 
-        /* Simulating the segmented chapter/breaks layout from the sample image */
         .video-js .vjs-progress-holder:before {
             content: "";
             position: absolute;
@@ -269,13 +265,11 @@
             pointer-events: none;
         }
 
-        /* Bold red active play progress bar */
         .video-js .vjs-play-progress {
             background-color: var(--player-accent-red) !important;
             border-radius: 4px !important;
         }
 
-        /* Gray buffered track segment */
         .video-js .vjs-load-progress {
             background: rgba(255, 255, 255, 0.35) !important;
             border-radius: 4px !important;
@@ -284,7 +278,6 @@
             background: transparent !important;
         }
 
-        /* Large circular Red Scrubber Thumb Knob */
         .video-js .vjs-play-progress:before {
             display: block !important;
             content: "" !important;
@@ -306,7 +299,6 @@
             transform: scale(1.25);
         }
 
-        /* Pill styled layout items for metrics matching layout look */
         .video-js .vjs-time-control {
             display: inline-flex !important;
             align-items: center !important;
@@ -323,21 +315,18 @@
         .video-js .vjs-current-time, 
         .video-js .vjs-duration, 
         .video-js .vjs-time-divider {
-            display: none !important; /* Hide defaults to replace with a standard combined module block */
+            display: none !important;
         }
         
-        /* Fallback if combined remaining time module is used */
         .video-js .vjs-remaining-time {
             display: inline-flex !important;
         }
 
-        /* Modernize and reposition default icons to standard inline positions */
         .video-js .vjs-button > .vjs-icon-placeholder:before {
             line-height: 60px !important;
             font-size: 20px !important;
         }
 
-        /* Shift full screen controls to the right flank edge */
         .video-js .vjs-fullscreen-control {
             margin-left: auto !important;
         }
@@ -538,8 +527,14 @@
                 const commaIdx = line.indexOf(',');
                 if (commaIdx !== -1) currentItem.name = line.substring(commaIdx + 1).trim();
             } 
-            else if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=')) {
-                if (currentItem) currentItem.drmKey = line.split('=')[1].trim();
+            else if (line.startsWith('#KODIPROP:')) {
+                // Extracts ClearKey even when keys occur inside multiple sequential tag definitions
+                if (currentItem && (line.includes('license_key=') || line.includes('license_key'))) {
+                    const eqIdx = line.indexOf('=');
+                    if (eqIdx !== -1) {
+                        currentItem.drmKey = line.substring(eqIdx + 1).trim();
+                    }
+                }
             } 
             else if (!line.startsWith('#')) {
                 if (currentItem) {
