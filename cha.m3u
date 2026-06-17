@@ -6,8 +6,10 @@ https://tv-trt1-esdai.medya.trt.com.tr/master.m3u8
 #EXTINF:-1 tvg-id="tapmad_urdu" tvg-name="Tapmad Urdu" tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", FIFA 26-Somoy TV
 https://live.thebosstv.com:30443/dwlive/Somoy-TV/playlist.m3u8
 
-#EXTINF:-1 tvg-id="bein_max" tvg-name="Bein Max" tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", FIFA 26-Bein Max
-https://no-red.pages.dev/liveop2.m3u8
+#EXTINF:-1 tvg-id="bein_max" tvg-name="Bein Max" tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", FIFA 26-T Sports
+http://113.21.231.219:789/Tsports/index.m3u8
+#EXTINF:-1 tvg-id="dd_sports" tvg-name="DD Sports" tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", Unite Sports
+http://212.102.34.8:9080/AndFlixHD/video.m3u8
 
 #EXTINF:-1 tvg-id="dd_sports" tvg-name="DD Sports" tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", DD Sports
 https://d3qs3d2rkhfqrt.cloudfront.net/out/v1/b17adfe543354fdd8d189b110617cddd/index_3.m3u8
