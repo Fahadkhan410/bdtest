@@ -1,7 +1,7 @@
 #EXTM3U
 
 #EXTINF:-1 tvg-id="fifa_tsn1" tvg-name="FIFA 26 TSN 1" tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", FIFA 26-TRT Sports
-https://stream.kurdtv.live/bein-max-2/index.m3u8
+https://str2.yodacdn.net/idman_300_to_small/tracks-v1a1/mono.m3u8
 
 #EXTINF:-1 tvg-id="bein_max" tvg-name="Bein Max" tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", FIFA 26-Next Sports
 https://next.badinan.xyz/nexttv/FHD/playlist.m3u8
@@ -14,6 +14,9 @@ https://live.thebosstv.com:30443/dwlive/Somoy-TV/playlist.m3u8
 
 #EXTINF:-1 tvg-id="bein_max" tvg-name="Bein Max" tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", FIFA 26-Bein Sports
 https://1nyaler.streamhostingcdn.top/stream/23/index.m3u8
+
+#EXTINF:-1 tvg-id="bein_max" tvg-name="Bein Max" tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", FIFA 26-DAZN 1
+http://znty.dyndns.org:5010/hls/eleven1.m3u8
 
 #EXTINF:-1 tvg-id="dd_sports" tvg-name="DD Sports" tvg-logo="https://i.postimg.cc/zDpLxcNy/FTP-Asfa-Iptv.png" group-title="FREE-BD", DD Sports
 https://d3qs3d2rkhfqrt.cloudfront.net/out/v1/b17adfe543354fdd8d189b110617cddd/index_3.m3u8
