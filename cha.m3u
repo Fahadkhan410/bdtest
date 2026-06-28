@@ -1,27 +1,24 @@
 #EXTM3U
 #EXTINF:-1 tvg-id="fifa_tsn1" tvg-name="FIFA 26 TSN 1" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA 26-Highlights
-https://andro.226503.xyz/checklist/androstreamlivebs1.m3u8
+https://hugh.cdn.rumble.cloud/live/v0xi25uh/slot-85/m8uy-e0k3/chunklist_DVR.m3u8
+#https://andro.226503.xyz/checklist/androstreamlivebs1.m3u8
+
+#EXTINF:-1 tvg-id="bein_max" tvg-name="Bein Max" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA-TOFFEE-🇧🇩-1ᶠᴴᴰ
+https://server.itcnbd.live/stream/FIFA-2026.m3u8
+#EXTINF:-1 tvg-id="bein_max" tvg-name="Bein Max" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA-TOFFEE-🇧🇩-2ᶠᴴᴰ
+https://server.itcnbd.live/stream/FIFA-2026-2.m3u8
+#EXTINF:-1 tvg-id="bein_max" tvg-name="Bein Max" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA-TOFFEE-🇧🇩-3ᶠᴴᴰ
+https://server.itcnbd.live/stream/FIFA-2026-3.m3u8
+#EXTINF:-1 tvg-id="bein_max" tvg-name="Bein Max" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA-TOFFEE-🇧🇩-4ᶠᴴᴰ
+https://server.itcnbd.live/stream/FIFA-2026-4.m3u8
+#EXTINF:-1 tvg-id="bein_max" tvg-name="Bein Max" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA-TOFFEE-🇧🇩-5ᶠᴴᴰ
+https://server.itcnbd.live/stream/FIFA-2026-5.m3u8
 
 #EXTINF:-1 tvg-id="fifa_tsn1" tvg-name="FIFA 26 TSN 1" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA 26-PTV Sports
 https://trs1.aynaott.com/ptvsports/index.m3u8
 
 #EXTINF:-1 tvg-id="fifa_tsn1" tvg-name="FIFA 26 TSN 1" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA 26-Fox Sports
 https://padmaonline.duckdns.org:8088/FOX/index.m3u8
-
-#EXTINF:-1 tvg-id="bein_max" tvg-name="Bein Max" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA-TOFFEE-🇧🇩-1ᶠᴴᴰ
-http://sm-monirul.top/tof/live/toffee1/index.m3u8
-
-#EXTINF:-1 tvg-id="bein_max" tvg-name="Bein Max" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA-TOFFEE-🇧🇩-2ᶠᴴᴰ
-http://sm-monirul.top/tof/live/toffee2/index.m3u8
-
-#EXTINF:-1 tvg-id="bein_max" tvg-name="Bein Max" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA-TOFFEE-🇧🇩-3ᶠᴴᴰ
-http://sm-monirul.top/tof/live/toffee3/index.m3u8
-
-#EXTINF:-1 tvg-id="bein_max" tvg-name="Bein Max" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA-TOFFEE-🇧🇩-4ᶠᴴᴰ
-https://sm-monirul.top/tof/live/toffee4/index.m3u8
-
-#EXTINF:-1 tvg-id="bein_max" tvg-name="Bein Max" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA-TOFFEE-🇧🇩-5ᶠᴴᴰ
-https://sm-monirul.top/tof/live/toffee5/index.m3u8
 
 #EXTINF:-1 tvg-id="bein_max" tvg-name="Bein Max" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA 26-Bein Sports SD
 https://1nyaler.streamhostingcdn.top/stream/23/index.m3u8
