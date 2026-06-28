@@ -2,7 +2,9 @@
 #EXTINF:-1 tvg-id="fifa_tsn1" tvg-name="FIFA 26 TSN 1" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA 26-Highlights
 https://hugh.cdn.rumble.cloud/live/v0xi25uh/slot-85/m8uy-e0k3/chunklist_DVR.m3u8
 #https://andro.226503.xyz/checklist/androstreamlivebs1.m3u8
-#EXTINF:-1 tvg-id="fifa_tsn1" tvg-name="FIFA 26 TSN 1" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA 26-T Sports
+#EXTINF:-1 tvg-id="fifa_tsn1" tvg-name="FIFA 26 TSN 1" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA 26-T Sports SD
+https://tv.beyondtaxconsultants.com/api/robi/lps/http://198.195.239.50:8095/tsports/tracks-v1/mono.m3u8
+#EXTINF:-1 tvg-id="fifa_tsn1" tvg-name="FIFA 26 TSN 1" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA 26-T Sports HD
 https://stream.mosarrofsabuz.me/tsports/tracks-v1a1/mono.m3u8
 #EXTINF:-1 tvg-id="fifa_tsn1" tvg-name="FIFA 26 TSN 1" tvg-logo="https://i.postimg.cc/SRgsPFyg/image.png" group-title="FREE-BD", FIFA 26-TOFFEE-🇧🇩-1ᶠᴴᴰ
 https://server.itcnbd.live/stream/FIFA-2026.m3u8
